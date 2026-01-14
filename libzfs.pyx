@@ -49,19 +49,21 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
         #endif
 
         #if defined(__GNUC__) || defined(__clang__)
-        #define PYZFS_ZPOOL_GET_STATUS_CONST \
-          __builtin_types_compatible_p(__typeof__(zpool_get_status), \
-              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *))
+        enum { PYZFS_ZPOOL_GET_STATUS_CONST =
+          __builtin_types_compatible_p(__typeof__(zpool_get_status),
+              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *)) };
         #else
-        #define PYZFS_ZPOOL_GET_STATUS_CONST 1
+        enum { PYZFS_ZPOOL_GET_STATUS_CONST = 1 };
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
-        #if PYZFS_ZPOOL_GET_STATUS_CONST
-          return zpool_get_status(zhp, msg, err);
+        #if defined(__GNUC__) || defined(__clang__)
+          return __builtin_choose_expr(PYZFS_ZPOOL_GET_STATUS_CONST,
+              zpool_get_status(zhp, msg, err),
+              zpool_get_status(zhp, (char **)msg, err));
         #else
-          return zpool_get_status(zhp, (char **)msg, err);
+          return zpool_get_status(zhp, msg, err);
         #endif
         }
         """
@@ -77,19 +79,21 @@ ELSE:
         #endif
 
         #if defined(__GNUC__) || defined(__clang__)
-        #define PYZFS_ZPOOL_GET_STATUS_CONST \
-          __builtin_types_compatible_p(__typeof__(zpool_get_status), \
-              zpool_status_t (*)(zpool_handle_t *, const char **))
+        enum { PYZFS_ZPOOL_GET_STATUS_CONST =
+          __builtin_types_compatible_p(__typeof__(zpool_get_status),
+              zpool_status_t (*)(zpool_handle_t *, const char **)) };
         #else
-        #define PYZFS_ZPOOL_GET_STATUS_CONST 1
+        enum { PYZFS_ZPOOL_GET_STATUS_CONST = 1 };
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg) {
-        #if PYZFS_ZPOOL_GET_STATUS_CONST
-          return zpool_get_status(zhp, msg);
+        #if defined(__GNUC__) || defined(__clang__)
+          return __builtin_choose_expr(PYZFS_ZPOOL_GET_STATUS_CONST,
+              zpool_get_status(zhp, msg),
+              zpool_get_status(zhp, (char **)msg));
         #else
-          return zpool_get_status(zhp, (char **)msg);
+          return zpool_get_status(zhp, msg);
         #endif
         }
         """
