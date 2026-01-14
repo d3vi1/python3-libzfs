@@ -56,6 +56,12 @@ ensure_zfs_header() {
     fi
   fi
 
+  local spl_types_header
+  spl_types_header=$(find /usr/src -path "*/include/os/linux/spl/sys/types.h" -print -quit 2>/dev/null || true)
+  if [[ -n "${spl_types_header}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${spl_types_header%/sys/types.h}"
+  fi
+
   local stdtypes_header=""
   if command -v rpm >/dev/null 2>&1; then
     stdtypes_header=$(rpm -ql libzfs5-devel libzfs-devel zfs-devel libspl-devel 2>/dev/null \
