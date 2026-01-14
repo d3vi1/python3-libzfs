@@ -10,7 +10,6 @@ install_common() {
     pip_args+=(--break-system-packages)
   fi
 
-  python3 -m pip install "${pip_args[@]}" --upgrade pip
   python3 -m pip install "${pip_args[@]}" cython
 }
 
@@ -29,8 +28,12 @@ download_openzfs_headers() {
 
 ensure_zfs_header() {
   local header
-  header=$(find /usr/include /usr/local/include /tmp/openzfs-src/include \
-    -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
+  for root in /usr/include/zfs /usr/include/libzfs /usr/src /usr/local/include /usr/include /tmp/openzfs-src/include; do
+    header=$(find "${root}" -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
+    if [[ -n "${header}" ]]; then
+      break
+    fi
+  done
   if [[ -z "${header}" ]]; then
     echo "sys/fs/zfs.h not found after installing headers." >&2
     return 1
@@ -40,17 +43,33 @@ ensure_zfs_header() {
   export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
 }
 
+add_pkg_config_cppflags() {
+  if ! command -v pkg-config >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if pkg-config --exists libzfs; then
+    export CPPFLAGS="${CPPFLAGS:-} $(pkg-config --cflags libzfs)"
+  elif pkg-config --exists zfs; then
+    export CPPFLAGS="${CPPFLAGS:-} $(pkg-config --cflags zfs)"
+  fi
+}
+
 install_ubuntu_libzfs() {
   apt-get install -y --no-install-recommends ca-certificates curl
 
-  if apt-cache show libzfs-dev >/dev/null 2>&1; then
-    apt-get install -y --no-install-recommends libzfs-dev libzfs5
-    return
+  if ! grep -Rqs "^deb .* universe" /etc/apt/sources.list /etc/apt/sources.list.d; then
+    apt-get install -y --no-install-recommends software-properties-common
+    add-apt-repository -y universe || true
+    apt-get update
   fi
-  if apt-cache show libzfs4linux-dev >/dev/null 2>&1; then
-    apt-get install -y --no-install-recommends libzfs4linux-dev libzfs4linux
-    return
-  fi
+
+  local pkg
+  for pkg in libzfs-dev libzfs4linux-dev libzfs2linux-dev; do
+    if apt-get install -y --no-install-recommends "${pkg}"; then
+      return
+    fi
+  done
 
   local ver
   ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
@@ -117,11 +136,11 @@ case "${DISTRO}" in
     install_ubuntu_libzfs
     ;;
   rocky-el8)
-    dnf -y install gcc make python3 python3-devel python3-pip
+    dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
     ;;
   rocky-el9)
-    dnf -y install gcc make python3 python3-devel python3-pip
+    dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
     ;;
   *)
@@ -135,6 +154,7 @@ install_common
 echo "==> Build"
 python3 --version
 
+add_pkg_config_cppflags
 ensure_zfs_header
 CPPFLAGS="${CPPFLAGS:-}" ./configure
 make
