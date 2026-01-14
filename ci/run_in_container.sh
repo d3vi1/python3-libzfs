@@ -125,6 +125,21 @@ EOF
     export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
   fi
 
+  if [[ ${use_openzfs_primary} -eq 1 ]]; then
+    mkdir -p /tmp/zfs-compat/sys
+    cat > /tmp/zfs-compat/sys/types.h <<'EOF'
+#include_next <sys/types.h>
+#include <stdint.h>
+#ifndef boolean_t
+typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
+#endif
+#ifndef hrtime_t
+typedef int64_t hrtime_t;
+#endif
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+  fi
+
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
