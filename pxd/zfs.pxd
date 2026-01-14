@@ -62,7 +62,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
     const char* ZPOOL_CONFIG_LOAD_INFO
     const char* ZPOOL_CONFIG_UNSUP_FEAT
 
-    IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+    if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
         const char* ZPOOL_CONFIG_ALLOCATION_BIAS
         const char* VDEV_ALLOC_BIAS_LOG
         const char* VDEV_ALLOC_BIAS_SPECIAL
@@ -83,7 +83,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
 
     const char* ZFS_DEV
 
-    IF HAVE_ZPOOL_LOAD_POLICY_T:
+    if HAVE_ZPOOL_LOAD_POLICY_T:
         # Pool load policy parameter
         const char* ZPOOL_LOAD_POLICY
         const char* ZPOOL_LOAD_REWIND_POLICY
@@ -91,14 +91,14 @@ cdef extern from "sys/fs/zfs.h" nogil:
         const char* ZPOOL_LOAD_META_THRESH
         const char* ZPOOL_LOAD_DATA_THRESH
 
-    IF HAVE_ZPOOL_REWIND_POLICY_T:
+    if HAVE_ZPOOL_REWIND_POLICY_T:
         const char *ZPOOL_REWIND_REQUEST
 
-    IF HAVE_ZPOOL_ERRATA_T_ENUM:
+    if HAVE_ZPOOL_ERRATA_T_ENUM:
         ctypedef enum zpool_errata_t:
             pass
 
-    IF HAVE_LZC_WAIT:
+    if HAVE_LZC_WAIT:
         ctypedef enum zpool_wait_activity_t:
             ZPOOL_WAIT_CKPT_DISCARD,
             ZPOOL_WAIT_FREE,
@@ -128,7 +128,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
         ZFS_IMPORT_ONLY
         ZFS_ONLINE_EXPAND
 
-    IF HAVE_ZFS_MAX_DATASET_NAME_LEN:
+    if HAVE_ZFS_MAX_DATASET_NAME_LEN:
         enum:
             ZFS_MAX_DATASET_NAME_LEN
 
@@ -235,14 +235,14 @@ cdef extern from "sys/fs/zfs.h" nogil:
         ZPROP_SRC_RECEIVED = 0x20
         ZPROP_SRC_ALL = 0x3f
 
-    IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_ENCRYPTION:
         ctypedef enum zfs_keystatus_t:
             ZFS_KEYSTATUS_NONE
             ZFS_KEYSTATUS_UNAVAILABLE
             ZFS_KEYSTATUS_AVAILABLE
 
-    IF HAVE_ZFS_SEND_RESUME_TOKEN_TO_NVLIST:
-        IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_SEND_RESUME_TOKEN_TO_NVLIST:
+        if HAVE_ZFS_ENCRYPTION:
             ctypedef enum zfs_prop_t:
                 ZPROP_CONT = -2
                 ZPROP_INVAL	= -1
@@ -251,7 +251,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
                 ZFS_PROP_KEYSTATUS
                 ZFS_PROP_RECEIVE_RESUME_TOKEN
                 ZFS_PROP_INCONSISTENT
-        ELSE:
+        else:
             ctypedef enum zfs_prop_t:
                 ZPROP_CONT = -2
                 ZPROP_INVAL	= -1
@@ -259,8 +259,8 @@ cdef extern from "sys/fs/zfs.h" nogil:
                 ZFS_PROP_CANMOUNT
                 ZFS_PROP_RECEIVE_RESUME_TOKEN
                 ZFS_PROP_INCONSISTENT
-    ELSE:
-        IF HAVE_ZFS_ENCRYPTION:
+    else:
+        if HAVE_ZFS_ENCRYPTION:
             ctypedef enum zfs_prop_t:
                 ZPROP_CONT = -2
                 ZPROP_INVAL	= -1
@@ -268,7 +268,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
                 ZFS_PROP_CANMOUNT
                 ZFS_PROP_KEYSTATUS
                 ZFS_PROP_INCONSISTENT
-        ELSE:
+        else:
             ctypedef enum zfs_prop_t:
                 ZPROP_CONT = -2
                 ZPROP_INVAL	= -1
@@ -295,9 +295,9 @@ cdef extern from "sys/fs/zfs.h" nogil:
     int zfs_prop_string_to_index(int, const char *, uint64_t *)
     uint64_t zfs_prop_random_value(int, uint64_t seed)
 
-    IF HAVE_ZFS_PROP_VALID_FOR_TYPE == 3:
+    if HAVE_ZFS_PROP_VALID_FOR_TYPE == 3:
         boolean_t zfs_prop_valid_for_type(int, zfs_type_t, boolean_t)
-    ELSE:
+    else:
         boolean_t zfs_prop_valid_for_type(int, zfs_type_t)
 
     int zpool_name_to_prop(const char *)
@@ -418,7 +418,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
         VDEV_STATE_DEGRADED
         VDEV_STATE_HEALTHY
 
-    IF HAVE_VDEV_AUX_ASHIFT_TOO_BIG:
+    if HAVE_VDEV_AUX_ASHIFT_TOO_BIG:
         ctypedef enum vdev_aux_t:
             VDEV_AUX_NONE
             VDEV_AUX_OPEN_FAILED
@@ -437,7 +437,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
             VDEV_AUX_EXTERNAL
             VDEV_AUX_SPLIT_POOL
             VDEV_AUX_ASHIFT_TOO_BIG
-    ELSE:
+    else:
         ctypedef enum vdev_aux_t:
             VDEV_AUX_NONE
             VDEV_AUX_OPEN_FAILED
@@ -472,7 +472,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
         POOL_SCAN_RESILVER
         POOL_SCAN_FUNCS
         
-    IF HAVE_POOL_SCRUB_CMD_T:
+    if HAVE_POOL_SCRUB_CMD_T:
         ctypedef enum pool_scrub_cmd_t:
             POOL_SCRUB_NORMAL = 0
             POOL_SCRUB_PAUSE
@@ -557,7 +557,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
         ddt_stat_t	ddh_stat[64]
 
 
-IF HAVE_ZFS_IOCTL_HEADER:
+if HAVE_ZFS_IOCTL_HEADER:
     cdef extern from "sys/zfs_ioctl.h":
         ctypedef struct zfs_cmd_t:
             char		zc_name[MAXPATHLEN]

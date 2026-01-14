@@ -4,7 +4,7 @@
 include "config.pxi"
 
 
-IF HAVE_NVPAIR_IN_SYS:
+if HAVE_NVPAIR_IN_SYS:
 	cdef extern from 'sys/nvpair.h' nogil:
 		ctypedef char int8_t
 		ctypedef unsigned char uint8_t
@@ -247,7 +247,7 @@ IF HAVE_NVPAIR_IN_SYS:
 		uint64_t fnvpair_value_uint64(nvpair_t *nvp)
 		char *fnvpair_value_string(nvpair_t *nvp)
 		nvlist_t *fnvpair_value_nvlist(nvpair_t *nvp)
-ELSE:
+else:
 	cdef extern from 'nvpair.h' nogil:
 		ctypedef char int8_t
 		ctypedef unsigned char uint8_t

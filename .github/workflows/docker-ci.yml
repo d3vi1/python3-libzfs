@@ -58,6 +58,7 @@ jobs:
           docker start "build-${{ matrix.target.name }}"
           docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} setup"
           docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} build"
+          docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} package"
       - name: Cleanup container
         if: always()
         run: docker rm -f "build-${{ matrix.target.name }}"
@@ -66,3 +67,10 @@ jobs:
         run: |
           sudo chown -R "$USER:$USER" .cache || true
           sudo chmod -R u+rwX .cache || true
+          sudo chown -R "$USER:$USER" dist build || true
+          sudo chmod -R u+rwX dist build || true
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libzfs-${{ matrix.target.name }}
+          path: dist/*

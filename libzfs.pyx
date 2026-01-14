@@ -30,18 +30,25 @@ include "config.pxi"
 include "nvpair.pxi"
 include "converter.pxi"
 
-cdef inline void clear_buf(char *buf, size_t buf_size) nogil:
-    if buf_size == 0:
-        return
-    memset(buf, 0, buf_size)
+cdef extern from *:
+    """
+    static inline void pyzfs_clear_buf(char *buf, size_t buf_size) {
+        if (buf_size != 0) {
+            memset(buf, 0, buf_size);
+        }
+    }
 
-
-cdef inline void copy_cstr(char *dst, size_t dst_size, const char *src) nogil:
-    if dst_size == 0:
-        return
-    memset(dst, 0, dst_size)
-    if src != NULL:
-        strncpy(dst, src, dst_size - 1)
+    static inline void pyzfs_copy_cstr(char *dst, size_t dst_size, const char *src) {
+        if (dst_size != 0) {
+            memset(dst, 0, dst_size);
+            if (src != NULL) {
+                strncpy(dst, src, dst_size - 1);
+            }
+        }
+    }
+    """
+    void pyzfs_clear_buf(char *buf, size_t buf_size) nogil
+    void pyzfs_copy_cstr(char *dst, size_t dst_size, const char *src) nogil
 
 cdef extern from *:
     """
@@ -53,7 +60,7 @@ cdef extern from *:
     #endif
     """
 
-IF HAVE_ZPOOL_GET_STATUS == 3:
+if HAVE_ZPOOL_GET_STATUS == 3:
     cdef extern from *:
         """
         #if defined(__has_include)
@@ -77,7 +84,7 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
         """
         zpool_status_t pyzfs_zpool_get_status(
             libzfs.zpool_handle_t *, const char **, zfs.zpool_errata_t *)
-ELSE:
+else:
     cdef extern from *:
         """
         #if defined(__has_include)
@@ -114,12 +121,12 @@ class UserquotaProp(enum.IntEnum):
     USERQUOTA = zfs.ZFS_PROP_USERQUOTA
     GROUPUSED = zfs.ZFS_PROP_GROUPUSED
     GROUPQUOTA = zfs.ZFS_PROP_GROUPQUOTA
-    IF HAVE_SPA_FEATURE_USEROBJ_ACCOUNTING:
+    if HAVE_SPA_FEATURE_USEROBJ_ACCOUNTING:
         USEROBJUSED = zfs.ZFS_PROP_USEROBJUSED
         USEROBJQUOTA = zfs.ZFS_PROP_USEROBJQUOTA
         GROUPOBJUSED = zfs.ZFS_PROP_GROUPOBJUSED
         GROUPOBJQUOTA = zfs.ZFS_PROP_GROUPOBJQUOTA
-    IF HAVE_SPA_FEATURE_PROJECT_QUOTA:
+    if HAVE_SPA_FEATURE_PROJECT_QUOTA:
         PROJECTUSED = zfs.ZFS_PROP_PROJECTUSED
         PROJECTQUOTA = zfs.ZFS_PROP_PROJECTQUOTA
         PROJECTOBJUSED = zfs.ZFS_PROP_PROJECTOBJUSED
@@ -199,12 +206,12 @@ class Error(enum.IntEnum):
     DIFFDATA = libzfs.EZFS_DIFFDATA
     POOLREADONLY = libzfs.EZFS_POOLREADONLY
     UNKNOWN = libzfs.EZFS_UNKNOWN
-    IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_ENCRYPTION:
         CRYPTO_FAILED = libzfs.EZFS_CRYPTOFAILED
 
 
 class LpcError(enum.IntEnum):
-    IF HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
+    if HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
         SUCCESS = libzfs.LPC_SUCCESS
         BADCACHE = libzfs.LPC_BADCACHE
         BADPATH = libzfs.LPC_BADPATH
@@ -250,7 +257,7 @@ class VDevAuxState(enum.IntEnum):
     BAD_LOG = zfs.VDEV_AUX_BAD_LOG
     EXTERNAL = zfs.VDEV_AUX_EXTERNAL
     SPLIT_POOL = zfs.VDEV_AUX_SPLIT_POOL
-    IF HAVE_VDEV_AUX_ASHIFT_TOO_BIG:
+    if HAVE_VDEV_AUX_ASHIFT_TOO_BIG:
         ASHIFT_TOO_BIG = zfs.VDEV_AUX_ASHIFT_TOO_BIG
 
 
@@ -289,7 +296,7 @@ class PoolStatus(enum.IntEnum):
     IO_FAILURE_CONTINUE = libzfs.ZPOOL_STATUS_IO_FAILURE_CONTINUE
     IO_FAILURE_MMP = libzfs.ZPOOL_STATUS_IO_FAILURE_MMP
     BAD_LOG = libzfs.ZPOOL_STATUS_BAD_LOG
-    IF HAVE_ZPOOL_STATUS_ERRATA:
+    if HAVE_ZPOOL_STATUS_ERRATA:
         ERRATA = libzfs.ZPOOL_STATUS_ERRATA
     UNSUP_FEAT_READ = libzfs.ZPOOL_STATUS_UNSUP_FEAT_READ
     UNSUP_FEAT_WRITE = libzfs.ZPOOL_STATUS_UNSUP_FEAT_WRITE
@@ -300,15 +307,15 @@ class PoolStatus(enum.IntEnum):
     RESILVERING = libzfs.ZPOOL_STATUS_RESILVERING
     OFFLINE_DEV = libzfs.ZPOOL_STATUS_OFFLINE_DEV
     REMOVED_DEV = libzfs.ZPOOL_STATUS_REMOVED_DEV
-    IF HAVE_ZPOOL_STATUS_REBUILDING:
+    if HAVE_ZPOOL_STATUS_REBUILDING:
         REBUILDING = libzfs.ZPOOL_STATUS_REBUILDING
-    IF HAVE_ZPOOL_STATUS_REBUILD_SCRUB:
+    if HAVE_ZPOOL_STATUS_REBUILD_SCRUB:
         REBUILD_SCRUB = libzfs.ZPOOL_STATUS_REBUILD_SCRUB
-    IF HAVE_ZPOOL_STATUS_NON_NATIVE_ASHIFT:
+    if HAVE_ZPOOL_STATUS_NON_NATIVE_ASHIFT:
         NON_NATIVE_ASHIFT = libzfs.ZPOOL_STATUS_NON_NATIVE_ASHIFT
-    IF HAVE_ZPOOL_STATUS_COMPATIBILITY_ERR:
+    if HAVE_ZPOOL_STATUS_COMPATIBILITY_ERR:
         COMPATIBILITY_ERR = libzfs.ZPOOL_STATUS_COMPATIBILITY_ERR
-    IF HAVE_ZPOOL_STATUS_INCOMPATIBLE_FEAT:
+    if HAVE_ZPOOL_STATUS_INCOMPATIBLE_FEAT:
         INCOMPATIBLE_FEAT = libzfs.ZPOOL_STATUS_INCOMPATIBLE_FEAT
     OK = libzfs.ZPOOL_STATUS_OK
 
@@ -329,7 +336,7 @@ class ZIOType(enum.IntEnum):
     IOCTL = zfs.ZIO_TYPE_IOCTL
 
 
-IF HAVE_LZC_WAIT:
+if HAVE_LZC_WAIT:
     class ZpoolWaitActivity(enum.IntEnum):
         DISCARD = zfs.ZPOOL_WAIT_CKPT_DISCARD
         FREE = zfs.ZPOOL_WAIT_FREE
@@ -349,9 +356,9 @@ class FeatureState(enum.Enum):
 
 
 class SendFlag(enum.Enum):
-    IF HAVE_SENDFLAGS_T_VERBOSITY:
+    if HAVE_SENDFLAGS_T_VERBOSITY:
         VERBOSITY = 0
-    ELSE:
+    else:
         VERBOSE = 0
     REPLICATE = 1
     DOALL = 2
@@ -362,19 +369,19 @@ class SendFlag(enum.Enum):
     PROGRESS = 7
     LARGEBLOCK = 8
     EMBED_DATA = 9
-    IF HAVE_SENDFLAGS_T_COMPRESS:
+    if HAVE_SENDFLAGS_T_COMPRESS:
         COMPRESS = 10
-    IF HAVE_SENDFLAGS_T_RAW:
+    if HAVE_SENDFLAGS_T_RAW:
         RAW = 11
-    IF HAVE_SENDFLAGS_T_BACKUP:
+    if HAVE_SENDFLAGS_T_BACKUP:
         BACKUP = 12
-    IF HAVE_SENDFLAGS_T_HOLDS:
+    if HAVE_SENDFLAGS_T_HOLDS:
         HOLDS = 13
-    IF HAVE_SENDFLAGS_T_SAVED:
+    if HAVE_SENDFLAGS_T_SAVED:
         SAVED = 14
-    IF HAVE_SENDFLAGS_T_PROGRESSASTITLE:
+    if HAVE_SENDFLAGS_T_PROGRESSASTITLE:
         PROGRESSASTITLE = 15
-    IF HAVE_SENDFLAGS_T_DEDUP:
+    if HAVE_SENDFLAGS_T_DEDUP:
         DEDUP = 16
 
 
@@ -394,10 +401,10 @@ class DiffFileType(enum.Enum):
     SOCKET = '='
 
 
-IF HAVE_ZFS_MAX_DATASET_NAME_LEN:
+if HAVE_ZFS_MAX_DATASET_NAME_LEN:
     cdef enum:
         MAX_DATASET_NAME_LEN = zfs.ZFS_MAX_DATASET_NAME_LEN
-ELSE:
+else:
     cdef enum:
         MAX_DATASET_NAME_LEN = libzfs.ZFS_MAXNAMELEN
 
@@ -464,7 +471,7 @@ class DiffRecord(object):
 
 
 
-IF HAVE_LZC_SEND_FLAG_EMBED_DATA:
+if HAVE_LZC_SEND_FLAG_EMBED_DATA:
     class SendFlags(enum.IntEnum):
         EMBED_DATA = libzfs.LZC_SEND_FLAG_EMBED_DATA
 
@@ -559,7 +566,7 @@ cdef class ZFS(object):
     def asdict(self):
         return [p.asdict() for p in self.pools]
 
-    IF HAVE_ZPOOL_EVENTS_NEXT:
+    if HAVE_ZPOOL_EVENTS_NEXT:
         def zpool_events(self, blocking=True, skip_existing_events=False):
             if skip_existing_events:
                 existing_events = len(list(self.zpool_events(blocking=False, skip_existing_events=False)))
@@ -605,9 +612,9 @@ cdef class ZFS(object):
 
         iter = <prop_iter_state *>arg
 
-        IF HAVE_ZFS_PROP_VALID_FOR_TYPE == 3:
+        if HAVE_ZFS_PROP_VALID_FOR_TYPE == 3:
             ret = zfs.zfs_prop_valid_for_type(proptype, iter.type, ret)
-        ELSE:
+        else:
             ret = zfs.zfs_prop_valid_for_type(proptype, iter.type)
 
         if not ret:
@@ -639,33 +646,33 @@ cdef class ZFS(object):
 
     @staticmethod
     cdef int __iterate_filesystems(libzfs.zfs_handle_t *zhp, int flags, libzfs.zfs_iter_f func, void *data) nogil:
-        IF HAVE_ZFS_ITER_FILESYSTEMS == 4:
+        if HAVE_ZFS_ITER_FILESYSTEMS == 4:
             return libzfs.zfs_iter_filesystems(zhp, flags, func, data)
-        ELSE:
+        else:
             # flags are ignored on older zfs
             return libzfs.zfs_iter_filesystems(zhp, func, data)
 
     @staticmethod
     cdef int __iterate_snapspec(libzfs.zfs_handle_t *zhp, int flags, const char *spec_orig, libzfs.zfs_iter_f func, void *arg) nogil:
-        IF HAVE_ZFS_ITER_SNAPSPEC == 5:
+        if HAVE_ZFS_ITER_SNAPSPEC == 5:
             return libzfs.zfs_iter_snapspec(zhp, flags, spec_orig, func, arg)
-        ELSE:
+        else:
             # flags are ignored on older zfs
             return libzfs.zfs_iter_snapspec(zhp, spec_orig, func, arg)
 
     @staticmethod
     cdef int __iterate_dependents(libzfs.zfs_handle_t *zhp, int flags, boolean_t allowrecursion, libzfs.zfs_iter_f func, void *data) nogil:
-        IF HAVE_ZFS_ITER_DEPENDENTS == 5:
+        if HAVE_ZFS_ITER_DEPENDENTS == 5:
             return libzfs.zfs_iter_dependents(zhp, flags, allowrecursion, func, data)
-        ELSE:
+        else:
             # flags are ignored on older zfs
             return libzfs.zfs_iter_dependents(zhp, allowrecursion, func, data)
 
     @staticmethod
     cdef int __iterate_bookmarks(libzfs.zfs_handle_t *zhp, int flags, libzfs.zfs_iter_f func, void *data) nogil:
-        IF HAVE_ZFS_ITER_BOOKMARKS == 4:
+        if HAVE_ZFS_ITER_BOOKMARKS == 4:
             return libzfs.zfs_iter_bookmarks(zhp, flags, func, data)
-        ELSE:
+        else:
             # flags are ignored on older zfs
             return libzfs.zfs_iter_bookmarks(zhp, func, data)
 
@@ -687,14 +694,14 @@ cdef class ZFS(object):
         def add_properties_to_vdev(vdev):
             cdef char vpath[zfs.MAXPATHLEN + 1]
             cdef boolean_t whole_disk
-            IF IS_OPENZFS:
+            if IS_OPENZFS:
                 # Each leaf vdev is supposed to have the wholedisk
                 # and ashift properties in its nvlist
                 if vdev.type != 'disk':
                     for child in vdev.children:
                         add_properties_to_vdev(child)
                 else:
-                    copy_cstr(vpath, cython.sizeof(vpath), vdev.path)
+                    pyzfs_copy_cstr(vpath, cython.sizeof(vpath), vdev.path)
                     with nogil:
                         whole_disk = zfs_dev_is_whole_disk(vpath)
                     (<ZFSVdev>vdev).set_whole_disk(whole_disk)
@@ -718,11 +725,11 @@ cdef class ZFS(object):
             for i in topology['log']:
                 vdev = <ZFSVdev>i
                 vdev.nvlist[zfs.ZPOOL_CONFIG_IS_LOG] = 1L
-                IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+                if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
                     vdev.nvlist[zfs.ZPOOL_CONFIG_ALLOCATION_BIAS] = zfs.VDEV_ALLOC_BIAS_LOG
                 root.add_child_vdev((<ZFSVdev>add_properties_to_vdev(vdev)))
 
-        IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+        if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
             if 'special' in topology:
                 for i in topology['special']:
                     vdev = <ZFSVdev>i
@@ -786,9 +793,9 @@ cdef class ZFS(object):
             for prop_name, prop_id in configuration_data['props'].get(dataset_type, {}).items():
                 csource = zfs.ZPROP_SRC_NONE
                 with nogil:
-                    clear_buf(cvalue, libzfs.ZFS_MAXPROPLEN + 1)
-                    clear_buf(crawvalue, libzfs.ZFS_MAXPROPLEN + 1)
-                    clear_buf(csrcstr, MAX_DATASET_NAME_LEN + 1)
+                    pyzfs_clear_buf(cvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    pyzfs_clear_buf(crawvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    pyzfs_clear_buf(csrcstr, MAX_DATASET_NAME_LEN + 1)
 
                     if libzfs.zfs_prop_get(
                         handle, prop_id, cvalue, libzfs.ZFS_MAXPROPLEN,
@@ -819,7 +826,7 @@ cdef class ZFS(object):
             child_data = child_data[1]
             encryption_dict = {}
 
-            IF HAVE_ZFS_ENCRYPTION:
+            if HAVE_ZFS_ENCRYPTION:
                 if 'encryption' in properties:
                     encryption_dict['encrypted'] = properties['encryption']['value'] != 'off'
                 if 'encryptionroot' in properties:
@@ -915,12 +922,12 @@ cdef class ZFS(object):
             libzfs.zfs_close(handle)
             return 0
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             if libzfs.zfs_prop_get_int(handle, zfs.ZFS_PROP_KEYSTATUS) == zfs.ZFS_KEYSTATUS_UNAVAILABLE:
                 libzfs.zfs_close(handle)
                 return 0
 
-        IF HAVE_ZFS_SEND_RESUME_TOKEN_TO_NVLIST:
+        if HAVE_ZFS_SEND_RESUME_TOKEN_TO_NVLIST:
             if (
                 libzfs.zfs_prop_get_int(handle, zfs.ZFS_PROP_INCONSISTENT) and libzfs.zfs_prop_get(
                     handle, zfs.ZFS_PROP_RECEIVE_RESUME_TOKEN, NULL, 0, NULL, NULL, 0, True
@@ -938,7 +945,7 @@ cdef class ZFS(object):
     cdef int mount_dataset(libzfs.zfs_handle_t *zhp, void *arg) nogil:
         cdef int ret
         cdef nvpair.nvlist_t* mount_data = <nvpair.nvlist_t*>arg
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             if libzfs.zfs_prop_get_int(zhp, zfs.ZFS_PROP_KEYSTATUS) == zfs.ZFS_KEYSTATUS_UNAVAILABLE:
                 return 0
 
@@ -950,9 +957,9 @@ cdef class ZFS(object):
     @staticmethod
     cdef int share_one_dataset(libzfs.zfs_handle_t *zhp, void *arg) nogil:
         cdef int ret
-        IF HAVE_ZFS_SHARE == 1:
+        if HAVE_ZFS_SHARE == 1:
             ret = libzfs.zfs_share(zhp)
-        ELSE:
+        else:
             ret = libzfs.zfs_share(zhp, NULL)
         if ret != 0:
             with gil:
@@ -964,7 +971,7 @@ cdef class ZFS(object):
         self.zpool_enable_datasets('pool', False)
 
 
-    IF HAVE_ZFS_FOREACH_MOUNTPOINT:
+    if HAVE_ZFS_FOREACH_MOUNTPOINT:
         cdef int zpool_enable_datasets(self, str name, int enable_shares):
             cdef libzfs.zfs_handle_t* handle
             cdef const char *c_name
@@ -1003,7 +1010,7 @@ cdef class ZFS(object):
                     <void*>mount_results,
                     False
                 )
-                IF HAVE_ZFS_SHARE == 2:
+                if HAVE_ZFS_SHARE == 2:
                     if not mount_results['failed_share']:
                         with nogil:
                             libzfs.zfs_commit_shares(NULL)
@@ -1094,9 +1101,9 @@ cdef class ZFS(object):
             for prop_name, prop_id in (props if not simple_handle else {}).items():
                 csource = zfs.ZPROP_SRC_NONE
                 with nogil:
-                    clear_buf(cvalue, libzfs.ZFS_MAXPROPLEN + 1)
-                    clear_buf(crawvalue, libzfs.ZFS_MAXPROPLEN + 1)
-                    clear_buf(csrcstr, MAX_DATASET_NAME_LEN + 1)
+                    pyzfs_clear_buf(cvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    pyzfs_clear_buf(crawvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    pyzfs_clear_buf(csrcstr, MAX_DATASET_NAME_LEN + 1)
 
                     if libzfs.zfs_prop_get(
                         handle, prop_id, cvalue, libzfs.ZFS_MAXPROPLEN,
@@ -1358,38 +1365,38 @@ cdef class ZFS(object):
         if cachefile:
             iargs.cachefile = cachefile
 
-        IF HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
+        if HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
             cdef libzfs.libpc_handle_t lpch
             lpch.lpc_lib_handle = self.handle
             lpch.lpc_ops = &libzfs.libzfs_config_ops
             lpch.lpc_printerr = True
 
         with nogil:
-            IF HAVE_THREAD_INIT_FINI:
+            if HAVE_THREAD_INIT_FINI:
                 thread_init()
-            IF HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 3:
+            if HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 3:
                 result = libzfs.zpool_search_import(self.handle, &iargs, &libzfs.libzfs_config_ops)
-            ELIF HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
+            elif HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
                 result = libzfs.zpool_search_import(&lpch, &iargs)
-            ELIF HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
+            elif HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
                 result = libzfs.zpool_search_import(self.handle, &iargs)
-            ELIF HAVE_ZPOOL_FIND_IMPORT:
+            elif HAVE_ZPOOL_FIND_IMPORT:
                 result = libzfs.zpool_find_import(self.handle, iargs.paths, iargs.path)
-            ELSE:
+            else:
                 result = NULL
-            IF HAVE_THREAD_INIT_FINI:
+            if HAVE_THREAD_INIT_FINI:
                 thread_fini()
 
         if iargs.path != NULL:
             free(iargs.path)
 
         if result is NULL:
-            IF HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
+            if HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
                 if cachefile:
                     raise ZFSInvalidCachefileException(LpcError(lpch.lpc_error), lpch.lpc_desc)
                 else:
                     raise ZFSException(LpcError(lpch.lpc_error), lpch.lpc_desc)
-            ELSE:
+            else:
                 return
 
         nv = NVList(nvlist=<uintptr_t>result)
@@ -1405,12 +1412,12 @@ cdef class ZFS(object):
 
             yield pool
 
-    IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_ENCRYPTION:
         def import_pool(
             self, ZFSImportablePool pool, newname, opts, missing_log=False, any_host=False, load_keys=False, enable_shares=False
         ):
             return self.__import_pool(pool, newname, opts, missing_log, any_host, load_keys, enable_shares)
-    ELSE:
+    else:
         def import_pool(self, ZFSImportablePool pool, newname, opts, missing_log=False, any_host=False, enable_shares=False):
             return self.__import_pool(pool, newname, opts, missing_log, any_host, enable_shares)
 
@@ -1441,7 +1448,7 @@ cdef class ZFS(object):
 
         newpool = self.get(newname)
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             failed_loading_keys = []
             if load_keys:
                 root_ds = newpool.root_dataset
@@ -1452,13 +1459,13 @@ cdef class ZFS(object):
                         except ZFSException:
                             failed_loading_keys.append(ds.name)
 
-        IF HAVE_ZFS_FOREACH_MOUNTPOINT:
+        if HAVE_ZFS_FOREACH_MOUNTPOINT:
             self.zpool_enable_datasets(newname, enable_shares)
-        ELSE:
+        else:
             with nogil:
-                IF HAVE_ZPOOL_ENABLE_DATASETS_PARAMS == 4:
+                if HAVE_ZPOOL_ENABLE_DATASETS_PARAMS == 4:
                     ret = libzfs.zpool_enable_datasets(newpool.handle, NULL, 0, 0)
-                ELSE:
+                else:
                     ret = libzfs.zpool_enable_datasets(newpool.handle, NULL, 0)
 
         self.write_history(
@@ -1468,7 +1475,7 @@ cdef class ZFS(object):
         if ret != 0:
                 raise self.get_error()
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             if failed_loading_keys:
                 raise ZFSException(1, f'Failed loading keys for {",".join(failed_loading_keys)}')
 
@@ -1586,7 +1593,7 @@ cdef class ZFS(object):
         copts = NVList(otherdict=opts)
 
         temp_file = None
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             temp_file, fsopts = ZFSPool._encryption_common(fsopts)
 
         try:
@@ -1607,7 +1614,7 @@ cdef class ZFS(object):
         if ret != 0:
             raise ZFSException(self.errno, self.errstr)
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             if temp_file:
                 ds = self.get_dataset(name)
                 ds.properties['keylocation'].value = 'prompt'
@@ -1668,11 +1675,11 @@ cdef class ZFS(object):
         if nomount:
             flags.nomount = True
 
-        IF HAVE_RECVFLAGS_T_RESUMABLE:
+        if HAVE_RECVFLAGS_T_RESUMABLE:
             if resumable:
                 flags.resumable = True
 
-        IF HAVE_ZFS_RECEIVE == 7:
+        if HAVE_ZFS_RECEIVE == 7:
             if props:
                 props_nvl = NVList(otherdict=props)
                 c_props_nvl = props_nvl.handle
@@ -1691,15 +1698,15 @@ cdef class ZFS(object):
                     c_limitds_nvl,
                     NULL
                 )
-        ELSE:
+        else:
             if props:
                 props_nvl = NVList(otherdict=props)
                 c_props_nvl = props_nvl.handle
 
             with nogil:
-                IF HAVE_ZFS_RECEIVE == 6:
+                if HAVE_ZFS_RECEIVE == 6:
                     ret = libzfs.zfs_receive(handle, c_name, c_props_nvl, &flags, c_fd, NULL)
-                ELSE:
+                else:
                     ret = libzfs.zfs_receive(handle, c_name, c_props_nvl, &flags, c_fd)
 
         if ret not in (0, -2):
@@ -1803,7 +1810,7 @@ cdef class ZFS(object):
                 out.extend(other)
         return out
 
-    IF HAVE_SENDFLAGS_T_TYPEDEF and HAVE_ZFS_SEND_RESUME:
+    if HAVE_SENDFLAGS_T_TYPEDEF and HAVE_ZFS_SEND_RESUME:
         def send_resume(self, fd, token, flags=None):
             cdef libzfs.sendflags_t cflags
             cdef int ret, c_fd
@@ -1821,7 +1828,7 @@ cdef class ZFS(object):
             if ret != 0:
                 raise ZFSException(self.errno, self.errstr)
 
-    IF HAVE_ZFS_SEND_RESUME_TOKEN_TO_NVLIST:
+    if HAVE_ZFS_SEND_RESUME_TOKEN_TO_NVLIST:
         def describe_resume_token(self, token):
             cdef nvpair.nvlist_t *nvl
             cdef char *c_token = token
@@ -2088,9 +2095,9 @@ cdef class ZFSProperty(object):
             dset = <ZFSObject>d
             with nogil:
                 if c_recursive and prop != zfs.ZPROP_INVAL:
-                    IF HAVE_ZFS_PROP_VALID_FOR_TYPE == 3:
+                    if HAVE_ZFS_PROP_VALID_FOR_TYPE == 3:
                         ret = <int>zfs.zfs_prop_valid_for_type(prop, libzfs.zfs_get_type(dset.handle), 0)
-                    ELSE:
+                    else:
                         ret = <int>zfs.zfs_prop_valid_for_type(prop, libzfs.zfs_get_type(dset.handle))
                     if ret != 1:
                         continue
@@ -2202,7 +2209,7 @@ cdef class ZFSVdevStats(object):
             'trim_notsup': self.trim_notsup,
             'trim_state': self.trim_state
         }
-        IF HAVE_ZFS_VDEV_STAT_ASHIFT:
+        if HAVE_ZFS_VDEV_STAT_ASHIFT:
             state.update({
                 'configured_ashift': self.configured_ashift,
                 'logical_ashift': self.logical_ashift,
@@ -2254,7 +2261,7 @@ cdef class ZFSVdevStats(object):
         def __get__(self):
             return self.vs.vs_bytes
 
-    IF HAVE_ZFS_VDEV_STAT_ASHIFT:
+    if HAVE_ZFS_VDEV_STAT_ASHIFT:
         property configured_ashift:
             def __get__(self):
                 return self.vs.vs_configured_ashift
@@ -2375,11 +2382,11 @@ cdef class ZFSVdev(object):
         cdef const char* c_new_vdev_path = new_vdev_path
 
         with nogil:
-            IF HAVE_ZPOOL_VDEV_ATTACH == 5:
+            if HAVE_ZPOOL_VDEV_ATTACH == 5:
                 rv = libzfs.zpool_vdev_attach(
                     self.zpool.handle, c_first_child_path, c_new_vdev_path, root.nvlist.handle, 0
                 )
-            ELSE:
+            else:
                 rv = libzfs.zpool_vdev_attach(
                     self.zpool.handle, c_first_child_path, c_new_vdev_path, root.nvlist.handle, 0, rebuild
                 )
@@ -2409,9 +2416,9 @@ cdef class ZFSVdev(object):
         cdef const char *c_vdev_path = vdev_path
 
         with nogil:
-            IF HAVE_ZPOOL_VDEV_ATTACH == 5:
+            if HAVE_ZPOOL_VDEV_ATTACH == 5:
                 rv = libzfs.zpool_vdev_attach(self.zpool.handle, c_path, c_vdev_path, root.nvlist.handle, 1)
-            ELSE:
+            else:
                 rv = libzfs.zpool_vdev_attach(self.zpool.handle, c_path, c_vdev_path, root.nvlist.handle, 1, rebuild)
 
         if rv != 0:
@@ -2790,7 +2797,7 @@ cdef class ZFSPool(object):
                 'spare': [i.asdict() for i in self.spare_vdevs if i.type not in filter_vdevs],
             },
         }
-        IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+        if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
             state['groups'].update({
                 'special': [i.asdict() for i in self.special_vdevs if i.type not in filter_vdevs],
                 'dedup': [i.asdict() for i in self.dedup_vdevs if i.type not in filter_vdevs],
@@ -2844,9 +2851,9 @@ cdef class ZFSPool(object):
             return vdev
 
     def __retrieve_vdevs(self, vdev_type):
-        IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+        if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
             valid_vdev_types = ('data', 'log', 'spare', 'cache', 'special', 'dedup')
-        ELSE:
+        else:
             valid_vdev_types = ('data', 'log', 'spare', 'cache')
         assert vdev_type in valid_vdev_types
 
@@ -2854,7 +2861,7 @@ cdef class ZFSPool(object):
         cdef NVList vdev_tree = self.get_raw_config().get_raw(zfs.ZPOOL_CONFIG_VDEV_TREE)
         raw_value = None
 
-        IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+        if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
             if vdev_type == 'special':
                 raw_value = zfs.ZPOOL_CONFIG_CHILDREN
                 valid_f = lambda c: c.get(zfs.ZPOOL_CONFIG_ALLOCATION_BIAS) == zfs.VDEV_ALLOC_BIAS_SPECIAL
@@ -2864,17 +2871,17 @@ cdef class ZFSPool(object):
 
         if vdev_type == 'data':
             raw_value = zfs.ZPOOL_CONFIG_CHILDREN
-            IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+            if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
                 valid_f = lambda c: zfs.ZPOOL_CONFIG_ALLOCATION_BIAS not in c
-            ELSE:
+            else:
                 valid_f = lambda c: not c[zfs.ZPOOL_CONFIG_IS_LOG]
         elif vdev_type == 'log':
             raw_value = zfs.ZPOOL_CONFIG_CHILDREN
-            IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+            if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
                 valid_f = lambda c: (
                     c.get(zfs.ZPOOL_CONFIG_ALLOCATION_BIAS) == zfs.VDEV_ALLOC_BIAS_LOG or c[zfs.ZPOOL_CONFIG_IS_LOG]
                 )
-            ELSE:
+            else:
                 valid_f = lambda c: c[zfs.ZPOOL_CONFIG_IS_LOG]
         elif vdev_type == 'spare':
             raw_value = zfs.ZPOOL_CONFIG_SPARES
@@ -2911,7 +2918,7 @@ cdef class ZFSPool(object):
         def __get__(self):
             return self.__retrieve_vdevs('spare')
 
-    IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+    if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
         property special_vdevs:
             def __get__(self):
                 return self.__retrieve_vdevs('special')
@@ -2928,7 +2935,7 @@ cdef class ZFSPool(object):
                 'cache': list(self.cache_vdevs),
                 'spare': list(self.spare_vdevs),
             }
-            IF HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
+            if HAVE_ZPOOL_CONFIG_ALLOCATION_BIAS:
                 groups.update({
                     'special': list(self.special_vdevs),
                     'dedup': list(self.dedup_vdevs),
@@ -2960,9 +2967,9 @@ cdef class ZFSPool(object):
         def __get__(self):
             cdef const char* msg_id
             if self.handle != NULL:
-                IF HAVE_ZPOOL_GET_STATUS == 3:
+                if HAVE_ZPOOL_GET_STATUS == 3:
                     return PoolStatus(pyzfs_zpool_get_status(self.handle, &msg_id, NULL))
-                ELSE:
+                else:
                     return PoolStatus(pyzfs_zpool_get_status(self.handle, &msg_id))
 
     def __warning_statuses(self):
@@ -3045,19 +3052,19 @@ cdef class ZFSPool(object):
                                             'pool was previously imported into a system with a different hostid, and '
                                             'then was verbatim imported into this system.',
             }
-            IF HAVE_ZPOOL_STATUS_ERRATA:
+            if HAVE_ZPOOL_STATUS_ERRATA:
                 status_mapping[PoolStatus.ERRATA] = 'Errata detected.'
-            IF HAVE_ZPOOL_STATUS_REBUILDING:
+            if HAVE_ZPOOL_STATUS_REBUILDING:
                 status_mapping[PoolStatus.REBUILDING] = 'One or more devices is currently being resilvered. The pool '\
                                                         'will continue to function, possibly in a degraded state.'
-            IF HAVE_ZPOOL_STATUS_REBUILD_SCRUB:
+            if HAVE_ZPOOL_STATUS_REBUILD_SCRUB:
                 status_mapping[PoolStatus.REBUILD_SCRUB] = 'One or more devices have been sequentially resilvered, '\
                                                            'scrubbing the pool is recommended.'
-            IF HAVE_ZPOOL_STATUS_COMPATIBILITY_ERR:
+            if HAVE_ZPOOL_STATUS_COMPATIBILITY_ERR:
                 status_mapping[PoolStatus.COMPATIBILITY_ERR] = 'This pool has a compatibility list specified, but it '\
                                                                'could not be read/parsed at this time. The pool can '\
                                                                'still be used, but this should be investigated.'
-            IF HAVE_ZPOOL_STATUS_INCOMPATIBLE_FEAT:
+            if HAVE_ZPOOL_STATUS_INCOMPATIBLE_FEAT:
                 status_mapping[PoolStatus.INCOMPATIBLE_FEAT] = 'One or more features are enabled on the pool despite '\
                                                                'not being requested by the \'compatibility\' property.'
             return status_mapping.get(code.value)
@@ -3129,7 +3136,7 @@ cdef class ZFSPool(object):
         def __get__(self):
             return ZPoolScrub(self.root, self)
 
-    IF HAVE_LZC_WAIT:
+    if HAVE_LZC_WAIT:
         def wait(self, operation_type):
             if operation_type not in ZpoolWaitActivity.__members__:
                 raise ZFSException(py_errno.EINVAL, 'Specify valid operation type for wait')
@@ -3145,7 +3152,7 @@ cdef class ZFSPool(object):
             if ret != 0:
                 raise OSError(ret, os.strerror(ret))
 
-    IF HAVE_LZC_SYNC:
+    if HAVE_LZC_SYNC:
         def sync(self, force=False):
             cdef int ret
             cdef const char *c_name = self.name
@@ -3161,7 +3168,7 @@ cdef class ZFSPool(object):
         cdef uintptr_t nvl = <uintptr_t>libzfs.zpool_get_config(self.handle, NULL)
         return NVList(nvl)
 
-    IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_ENCRYPTION:
         @staticmethod
         def _encryption_common(fsopts):
             temp_file = None
@@ -3199,7 +3206,7 @@ cdef class ZFSPool(object):
                 fsopts[i] = nicestrtonum(self.root, value)
 
         temp_file = None
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             temp_file, fsopts = self._encryption_common(fsopts)
 
         try:
@@ -3208,9 +3215,9 @@ cdef class ZFSPool(object):
             if fstype == DatasetType.VOLUME and not sparse_vol:
                 vol_size = cfsopts['volsize']
                 with nogil:
-                    IF HAVE_ZVOLSIZE_TO_RESERVATION_PARAMS == 3:
+                    if HAVE_ZVOLSIZE_TO_RESERVATION_PARAMS == 3:
                         vol_reservation = libzfs.zvol_volsize_to_reservation(self.handle, vol_size, cfsopts.handle)
-                    ELSE:
+                    else:
                         vol_reservation = libzfs.zvol_volsize_to_reservation(vol_size, cfsopts.handle)
 
                 cfsopts['refreservation'] = vol_reservation
@@ -3238,7 +3245,7 @@ cdef class ZFSPool(object):
         if ret != 0:
             raise self.root.get_error()
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             if temp_file:
                 ds = self.root.get_dataset(name)
                 ds.properties['keylocation'].value = 'prompt'
@@ -3254,9 +3261,9 @@ cdef class ZFSPool(object):
         cdef boolean_t ashift = check_ashift
 
         with nogil:
-            IF HAVE_ZPOOL_ADD_PARAMS == 3:
+            if HAVE_ZPOOL_ADD_PARAMS == 3:
                 ret = libzfs.zpool_add(self.handle, vd.nvlist.handle, ashift)
-            ELSE:
+            else:
                 ret = libzfs.zpool_add(self.handle, vd.nvlist.handle)
 
         if ret != 0:
@@ -3298,9 +3305,9 @@ cdef class ZFSPool(object):
         cdef int ret
 
         with nogil:
-            IF HAVE_ZPOOL_SCAN == 3:
+            if HAVE_ZPOOL_SCAN == 3:
                 ret = libzfs.zpool_scan(self.handle, zfs.POOL_SCAN_SCRUB, zfs.POOL_SCRUB_NORMAL)
-            ELSE:
+            else:
                 ret = libzfs.zpool_scan(self.handle, zfs.POOL_SCAN_SCRUB)
 
         if ret != 0:
@@ -3312,9 +3319,9 @@ cdef class ZFSPool(object):
         cdef int ret
 
         with nogil:
-            IF HAVE_ZPOOL_SCAN == 3:
+            if HAVE_ZPOOL_SCAN == 3:
                 ret = libzfs.zpool_scan(self.handle, zfs.POOL_SCAN_NONE, zfs.POOL_SCRUB_NORMAL)
-            ELSE:
+            else:
                 ret = libzfs.zpool_scan(self.handle, zfs.POOL_SCAN_NONE)
 
         if ret != 0:
@@ -3325,9 +3332,9 @@ cdef class ZFSPool(object):
     def clear(self):
         cdef NVList policy = NVList()
         cdef int ret
-        IF HAVE_ZPOOL_LOAD_POLICY_T:
+        if HAVE_ZPOOL_LOAD_POLICY_T:
             policy[zfs.ZPOOL_LOAD_REWIND_POLICY] = zfs.ZPOOL_NO_REWIND
-        ELIF HAVE_ZPOOL_REWIND_POLICY_T:
+        elif HAVE_ZPOOL_REWIND_POLICY_T:
             policy[zfs.ZPOOL_REWIND_REQUEST] = zfs.ZPOOL_NO_REWIND
 
         with nogil:
@@ -3553,24 +3560,24 @@ cdef class ZFSObject(object):
         cdef const char *c_new_name = new_name
         cdef int ret
 
-        IF HAVE_RENAMEFLAGS_T:
+        if HAVE_RENAMEFLAGS_T:
             cdef libzfs.renameflags_t flags
-            IF HAVE_RENAMEFLAGS_T_RECURSE:
+            if HAVE_RENAMEFLAGS_T_RECURSE:
                 flags.recurse = recursive
-            ELSE:
+            else:
                 flags.recursive = recursive
             flags.nounmount = nounmount
             flags.forceunmount = forceunmount
 
             with nogil:
-                IF HAVE_ZFS_RENAME == 4:
+                if HAVE_ZFS_RENAME == 4:
                     ret = libzfs.zfs_rename(self.handle, NULL, c_new_name, flags)
-                ELSE:
+                else:
                     ret = libzfs.zfs_rename(self.handle, c_new_name, flags)
 
             history = ['zfs rename', '-f' if forceunmount else '', '-u' if nounmount else '', self.name]
 
-        ELSE:
+        else:
             if nounmount:
                 raise RuntimeError('nounmount option is not supported on this system')
 
@@ -3605,9 +3612,9 @@ cdef class ZFSObject(object):
         cdef int ret
 
         with nogil:
-            IF HAVE_LZC_SEND_SPACE == 4:
+            if HAVE_LZC_SEND_SPACE == 4:
                 ret = libzfs.lzc_send_space(c_name, cfromname, 0, &space)
-            ELSE:
+            else:
                 ret = libzfs.lzc_send_space(c_name, cfromname, &space)
 
         if ret != 0:
@@ -3756,7 +3763,7 @@ cdef class ZFSDataset(ZFSResource):
         if snapshots_recursive:
             ret['snapshots_recursive'] = [s.asdict() for s in self.snapshots_recursive]
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             root = self.encryption_root
             ret.update({
                 'encrypted': self.encrypted,
@@ -4012,7 +4019,7 @@ cdef class ZFSDataset(ZFSResource):
             free(mntpt)
             return result
 
-    IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_ENCRYPTION:
         property encrypted:
             def __get__(self):
                 return self.properties['encryption'].value != 'off'
@@ -4203,10 +4210,10 @@ cdef class ZFSDataset(ZFSResource):
 
         self.root.write_history('zfs mount', self.name)
 
-    IF HAVE_ZFS_ENCRYPTION:
+    if HAVE_ZFS_ENCRYPTION:
         def mount_recursive(self, ignore_errors=False, skip_unloaded_keys=True):
             return self._mount_recursive(ignore_errors, skip_unloaded_keys)
-    ELSE:
+    else:
         def mount_recursive(self, ignore_errors=False):
             return self._mount_recursive(ignore_errors, False)
 
@@ -4214,7 +4221,7 @@ cdef class ZFSDataset(ZFSResource):
         if self.type != DatasetType.FILESYSTEM:
             return
 
-        IF HAVE_ZFS_ENCRYPTION:
+        if HAVE_ZFS_ENCRYPTION:
             if self.encrypted and not self.key_loaded and skip_unloaded_keys:
                 return
 
@@ -4384,7 +4391,7 @@ cdef class ZFSSnapshot(ZFSResource):
 
         self.root.write_history('zfs rollback', '-f' if force else '', self.name)
 
-    IF HAVE_LZC_BOOKMARK:
+    if HAVE_LZC_BOOKMARK:
         def bookmark(self, name):
             cdef NVList bookmarks
             cdef nvpair.nvlist_t *c_bookmarks
@@ -4531,14 +4538,14 @@ cdef class ZFSSnapshot(ZFSResource):
             return result
 
     def get_send_progress(self, fd):
-        IF HAVE_ZFS_IOCTL_HEADER:
+        if HAVE_ZFS_IOCTL_HEADER:
             cdef zfs.zfs_cmd_t cmd
             memset(&cmd, 0, cython.sizeof(zfs.zfs_cmd_t))
 
             cdef int ret
 
             cmd.zc_cookie = fd
-            copy_cstr(cmd.zc_name, cython.sizeof(cmd.zc_name), self.name)
+            pyzfs_copy_cstr(cmd.zc_name, cython.sizeof(cmd.zc_name), self.name)
 
             with nogil:
                 ret = libzfs.zfs_ioctl(self.root.handle, zfs.ZFS_IOC_SEND_PROGRESS, &cmd)
@@ -4547,7 +4554,7 @@ cdef class ZFSSnapshot(ZFSResource):
                 raise ZFSException(Error.FAULT, "Cannot obtain send progress")
 
             return cmd.zc_cookie
-        ELSE:
+        else:
             raise NotImplementedError()
 
 cdef class ZFSBookmark(ZFSObject):
@@ -4572,10 +4579,10 @@ cdef convert_sendflags(flags, libzfs.sendflags_t *cflags):
     if not isinstance(flags, set):
         raise ValueError('flags must be passed as a set')
 
-    IF HAVE_SENDFLAGS_T_VERBOSITY:
+    if HAVE_SENDFLAGS_T_VERBOSITY:
          if SendFlag.VERBOSITY in flags:
             cflags.verbosity = 1
-    ELSE:
+    else:
         if SendFlag.VERBOSE in flags:
             cflags.verbose = 1
 
@@ -4588,7 +4595,7 @@ cdef convert_sendflags(flags, libzfs.sendflags_t *cflags):
     if SendFlag.FROMORIGIN in flags:
         cflags.fromorigin = 1
 
-    IF HAVE_SENDFLAGS_T_DEDUP:
+    if HAVE_SENDFLAGS_T_DEDUP:
         if SendFlag.DEDUP in flags:
             cflags.dedup = 1
 
@@ -4610,27 +4617,27 @@ cdef convert_sendflags(flags, libzfs.sendflags_t *cflags):
     if SendFlag.EMBED_DATA in flags:
         cflags.embed_data = 1
 
-    IF HAVE_SENDFLAGS_T_COMPRESS:
+    if HAVE_SENDFLAGS_T_COMPRESS:
         if SendFlag.COMPRESS in flags:
             cflags.compress = 1
 
-    IF HAVE_SENDFLAGS_T_RAW:
+    if HAVE_SENDFLAGS_T_RAW:
         if SendFlag.RAW in flags:
             cflags.raw = 1
 
-    IF HAVE_SENDFLAGS_T_BACKUP:
+    if HAVE_SENDFLAGS_T_BACKUP:
         if SendFlag.BACKUP in flags:
             cflags.backup = 1
 
-    IF HAVE_SENDFLAGS_T_HOLDS:
+    if HAVE_SENDFLAGS_T_HOLDS:
         if SendFlag.HOLDS in flags:
             cflags.holds = 1
 
-    IF HAVE_SENDFLAGS_T_SAVED:
+    if HAVE_SENDFLAGS_T_SAVED:
         if SendFlag.SAVED in flags:
             cflags.saved = 1
 
-    IF HAVE_SENDFLAGS_T_PROGRESSASTITLE:
+    if HAVE_SENDFLAGS_T_PROGRESSASTITLE:
         if SendFlag.PROGRESSASTITLE in flags:
             cflags.progressastitle = 1
 
@@ -4660,11 +4667,11 @@ def read_label(device):
         os.close(fd)
         raise OSError(errno.EINVAL, 'Not a character device')
 
-    IF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 3:
+    if (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 3:
         ret = libzfs.zpool_read_label(fd, &handle, NULL)
-    ELIF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 2:
+    elif (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 2:
         ret = libzfs.zpool_read_label(fd, &handle)
-    ELSE:
+    else:
         os.close(fd)
         raise NotImplementedError("zpool_read_label not available in this libzfs build")
 
