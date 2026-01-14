@@ -4506,11 +4506,11 @@ def nicestrtonum(ZFS zfs, value):
 
 
 def read_label(device):
-    cdef nvpair.nvlist_t *handle
+    cdef nvpair.nvlist_t *handle = NULL
     cdef NVList nvlist
     cdef char *buf
     cdef char *read
-    cdef int ret
+    cdef int ret = -1
 
     fd = os.open(device, os.O_RDONLY)
     if fd < 0:
@@ -4521,12 +4521,13 @@ def read_label(device):
         os.close(fd)
         raise OSError(errno.EINVAL, 'Not a character device')
 
-        IF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 3:
-            ret = libzfs.zpool_read_label(fd, &handle, NULL)
-        ELIF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 2:
-            ret = libzfs.zpool_read_label(fd, &handle)
-        ELSE:
-            raise NotImplementedError("zpool_read_label not available in this libzfs build")
+    IF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 3:
+        ret = libzfs.zpool_read_label(fd, &handle, NULL)
+    ELIF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 2:
+        ret = libzfs.zpool_read_label(fd, &handle)
+    ELSE:
+        os.close(fd)
+        raise NotImplementedError("zpool_read_label not available in this libzfs build")
 
     if ret != 0:
         os.close(fd)
