@@ -21,9 +21,8 @@ download_openzfs_headers() {
   echo "==> Downloading OpenZFS headers ${tag}"
   mkdir -p /tmp/openzfs-src
   curl -fsSL "${url}" | tar -xz -C /tmp/openzfs-src --strip-components=1
-  cp -R /tmp/openzfs-src/include/* /usr/local/include/
 
-  export CPPFLAGS="-I/usr/local/include"
+  export CPPFLAGS="-I/tmp/openzfs-src/include -I/tmp/openzfs-src/lib/libspl/include"
 }
 
 ensure_zfs_header() {
@@ -62,12 +61,7 @@ ensure_zfs_header() {
   fi
 
   local extra
-  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs; do
-    if [[ -d "${extra}" ]]; then
-      export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
-    fi
-  done
-  for extra in /usr/local/include/spl /usr/include/spl; do
+  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs /tmp/openzfs-src/lib/libspl/include; do
     if [[ -d "${extra}" ]]; then
       export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
     fi
@@ -163,6 +157,14 @@ install_rocky_libzfs() {
     else
       echo "No libzfs development package found and cannot determine OpenZFS version." >&2
       exit 1
+    fi
+  fi
+
+  if ! find /usr/include/libzfs /usr/include -path "*/sys/zfs_ioctl.h" -print -quit 2>/dev/null | grep -q .; then
+    local ver
+    ver=$(rpm -q --qf '%{VERSION}' libzfs5 2>/dev/null || rpm -q --qf '%{VERSION}' zfs 2>/dev/null || true)
+    if [[ -n "${ver}" ]]; then
+      download_openzfs_headers "${ver}"
     fi
   fi
 }
