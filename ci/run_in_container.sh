@@ -22,7 +22,7 @@ download_openzfs_headers() {
   mkdir -p /tmp/openzfs-src
   curl -fsSL "${url}" | tar -xz -C /tmp/openzfs-src --strip-components=1
 
-  export CPPFLAGS="-I/tmp/openzfs-src/include -I/tmp/openzfs-src/lib/libspl/include"
+  export CPPFLAGS="-I/tmp/openzfs-src/include -I/tmp/openzfs-src/lib/libspl/include -I/tmp/openzfs-src/lib/libzfs"
 }
 
 ensure_zfs_header() {
@@ -61,7 +61,8 @@ ensure_zfs_header() {
   fi
 
   local extra
-  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs /tmp/openzfs-src/lib/libspl/include; do
+  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs \
+    /tmp/openzfs-src/lib/libspl/include /tmp/openzfs-src/lib/libzfs; do
     if [[ -d "${extra}" ]]; then
       export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
     fi
