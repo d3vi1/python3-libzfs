@@ -74,6 +74,9 @@ ensure_zfs_header() {
   else
     export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
   fi
+  if [[ -n "${OPENZFS_SRC:-}" && -d "${OPENZFS_SRC}/include" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -idirafter ${OPENZFS_SRC}/include"
+  fi
 
   local ioctl_header
   ioctl_header=$(find /usr/local/include /usr/include /usr/include/zfs /usr/src /tmp/openzfs-src/include \
@@ -205,6 +208,12 @@ install_ubuntu_libzfs() {
     echo "==> dpkg -L libzfs2linux"
     dpkg -L libzfs2linux || true
   fi
+  for pkg in libzfs4linux libzpool5linux libnvpair3linux libuutil3linux; do
+    if dpkg-query -W -f='${Status}' "${pkg}" 2>/dev/null | grep -q "installed"; then
+      echo "==> dpkg -L ${pkg}"
+      dpkg -L "${pkg}" || true
+    fi
+  done
   local ver
   ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
   if [[ -z "${ver}" ]]; then
