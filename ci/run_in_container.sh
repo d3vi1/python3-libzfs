@@ -173,6 +173,23 @@ EOF
     export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
   fi
 
+  if [[ ! -e /usr/include/sys/mnttab.h ]]; then
+    mkdir -p /tmp/zfs-compat/sys
+    cat > /tmp/zfs-compat/sys/mnttab.h <<'EOF'
+#ifndef _SYS_MNTTAB_H
+#define _SYS_MNTTAB_H
+struct mnttab {
+	char *mnt_special;
+	char *mnt_mountp;
+	char *mnt_fstype;
+	char *mnt_mntopts;
+	char *mnt_time;
+};
+#endif
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+  fi
+
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
