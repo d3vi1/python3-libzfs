@@ -28,17 +28,19 @@ cdef extern from *:
     #endif
     #endif
 
-    #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+    #if defined(__GNUC__) || defined(__clang__)
     #define PYZFS_NVPAIR_VALUE_STRING_CONST \
-      _Generic((nvpair_value_string), int (*)(const nvpair_t *, const char **): 1, default: 0)
+      __builtin_types_compatible_p(__typeof__(nvpair_value_string), \
+          int (const nvpair_t *, const char **))
     #define PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST \
-      _Generic((nvpair_value_string_array), int (*)(nvpair_t *, const char ***, uint_t *): 1, default: 0)
+      __builtin_types_compatible_p(__typeof__(nvpair_value_string_array), \
+          int (nvpair_t *, const char ***, uint_t *))
     #define PYZFS_NVLIST_ADD_STRING_ARRAY_CONST \
-      _Generic((nvlist_add_string_array), \
-          int (*)(nvlist_t *, const char *, const char * const *, uint_t): 1, default: 0)
+      __builtin_types_compatible_p(__typeof__(nvlist_add_string_array), \
+          int (nvlist_t *, const char *, const char * const *, uint_t))
     #define PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST \
-      _Generic((nvlist_add_nvlist_array), \
-          int (*)(nvlist_t *, const char *, const nvlist_t * const *, uint_t): 1, default: 0)
+      __builtin_types_compatible_p(__typeof__(nvlist_add_nvlist_array), \
+          int (nvlist_t *, const char *, const nvlist_t * const *, uint_t))
     #else
     #define PYZFS_NVPAIR_VALUE_STRING_CONST 0
     #define PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST 0

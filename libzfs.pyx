@@ -48,10 +48,10 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
         #endif
         #endif
 
-        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        #if defined(__GNUC__) || defined(__clang__)
         #define PYZFS_ZPOOL_GET_STATUS_CONST \
-          _Generic((zpool_get_status), \
-              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *): 1, default: 0)
+          __builtin_types_compatible_p(__typeof__(zpool_get_status), \
+              zpool_status_t (zpool_handle_t *, const char **, zpool_errata_t *))
         #else
         #define PYZFS_ZPOOL_GET_STATUS_CONST 0
         #endif
@@ -75,10 +75,10 @@ ELSE:
         #endif
         #endif
 
-        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        #if defined(__GNUC__) || defined(__clang__)
         #define PYZFS_ZPOOL_GET_STATUS_CONST \
-          _Generic((zpool_get_status), \
-              zpool_status_t (*)(zpool_handle_t *, const char **): 1, default: 0)
+          __builtin_types_compatible_p(__typeof__(zpool_get_status), \
+              zpool_status_t (zpool_handle_t *, const char **))
         #else
         #define PYZFS_ZPOOL_GET_STATUS_CONST 0
         #endif
