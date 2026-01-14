@@ -334,6 +334,7 @@ cdef struct iter_state:
     uintptr_t *array
     size_t length
     size_t alloc
+    int error
 
 
 cdef struct prop_iter_state:
@@ -539,7 +540,7 @@ cdef class ZFS(object):
             return zfs.ZPROP_CONT
 
     @staticmethod
-    cdef int __iterate_pools(libzfs.zpool_handle_t *handle, void *arg) nogil:
+    cdef int __iterate_pools(libzfs.zpool_handle_t *handle, void *arg) noexcept nogil:
         cdef iter_state *iter
         cdef iter_state new
 
@@ -548,8 +549,8 @@ cdef class ZFS(object):
             new.alloc = iter.alloc + 32
             new.array = <uintptr_t *>realloc(iter.array, new.alloc * sizeof(uintptr_t))
             if not new.array:
-                free(iter.array)
-                raise MemoryError()
+                iter.error = 1
+                return 1
 
             iter.alloc = new.alloc
             iter.array = new.array
@@ -1154,6 +1155,7 @@ cdef class ZFS(object):
             try:
                 with nogil:
                     iter.length = 0
+                    iter.error = 0
                     iter.array = <uintptr_t *>malloc(32 * sizeof(uintptr_t))
                     if not iter.array:
                         raise MemoryError()
@@ -1161,6 +1163,9 @@ cdef class ZFS(object):
                     iter.alloc = 32
 
                     libzfs.zpool_iter(self.handle, self.__iterate_pools, <void*>&iter)
+
+                if iter.error:
+                    raise MemoryError()
 
                 for h in range(0, iter.length):
                     handle = <libzfs.zpool_handle_t*>iter.array[h]
@@ -3508,7 +3513,7 @@ cdef class ZFSObject(object):
 cdef class ZFSResource(ZFSObject):
 
     @staticmethod
-    cdef int __iterate(libzfs.zfs_handle_t* handle, void *arg) nogil:
+    cdef int __iterate(libzfs.zfs_handle_t* handle, void *arg) noexcept nogil:
         cdef iter_state *iter
         cdef iter_state new
 
@@ -3517,8 +3522,8 @@ cdef class ZFSResource(ZFSObject):
             new.alloc = iter.alloc + 128
             new.array = <uintptr_t *>realloc(iter.array, new.alloc * sizeof(uintptr_t))
             if not new.array:
-                free(iter.array)
-                raise MemoryError()
+                iter.error = 1
+                return 1
 
             iter.alloc = new.alloc
             iter.array = new.array
@@ -3535,6 +3540,7 @@ cdef class ZFSResource(ZFSObject):
 
         with nogil:
             iter.length = 0
+            iter.error = 0
             iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
             if not iter.array:
                 raise MemoryError()
@@ -3543,6 +3549,8 @@ cdef class ZFSResource(ZFSObject):
             ZFS.__iterate_dependents(self.handle, 0, recursion, ZFSResource.__iterate, <void*>&iter)
 
         try:
+            if iter.error:
+                raise MemoryError()
             for h in range(0, iter.length):
                 type = libzfs.zfs_get_type(<libzfs.zfs_handle_t*>iter.array[h])
 
@@ -3736,6 +3744,7 @@ cdef class ZFSDataset(ZFSResource):
 
             datasets = []
             iter.length = 0
+            iter.error = 0
             iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
             if not iter.array:
                 raise MemoryError()
@@ -3744,6 +3753,8 @@ cdef class ZFSDataset(ZFSResource):
             ZFS.__iterate_filesystems(self.handle, 0, ZFSResource.__iterate, <void*>&iter)
 
             try:
+                if iter.error:
+                    raise MemoryError()
                 for h in range(0, iter.length):
                     dataset = ZFSDataset.__new__(ZFSDataset)
                     dataset.handle = <libzfs.zfs_handle_t*>iter.array[h]
@@ -3771,6 +3782,7 @@ cdef class ZFSDataset(ZFSResource):
             cdef iter_state iter
 
             iter.length = 0
+            iter.error = 0
             iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
             if not iter.array:
                 raise MemoryError()
@@ -3779,6 +3791,8 @@ cdef class ZFSDataset(ZFSResource):
             libzfs.zfs_iter_snapshots(self.handle, False, ZFSResource.__iterate, <void*>&iter, 0, 0)
 
             try:
+                if iter.error:
+                    raise MemoryError()
                 for h in range(0, iter.length):
                     snapshot = ZFSSnapshot.__new__(ZFSSnapshot)
                     snapshot.handle = <libzfs.zfs_handle_t*>iter.array[h]
@@ -3803,6 +3817,7 @@ cdef class ZFSDataset(ZFSResource):
             cdef iter_state iter
 
             iter.length = 0
+            iter.error = 0
             iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
             if not iter.array:
                 raise MemoryError()
@@ -3811,6 +3826,8 @@ cdef class ZFSDataset(ZFSResource):
             ZFS.__iterate_bookmarks(self.handle, 0, ZFSResource.__iterate, <void *>&iter)
 
             try:
+                if iter.error:
+                    raise MemoryError()
                 for b in range(0, iter.length):
                     bookmark = ZFSBookmark.__new__(ZFSBookmark)
                     bookmark.handle = <libzfs.zfs_handle_t*>iter.array[b]
