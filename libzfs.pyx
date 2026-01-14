@@ -586,8 +586,9 @@ cdef class ZFS(object):
             zevent_fd = zfs_dev_fd
             with nogil:
                 ret = libzfs.zpool_events_next(self.handle, &nvl, &dropped, block_flag, zevent_fd)
-                if ret != 0 or (nvl == NULL and block_flag == 0):
-                    raise self.get_error()
+
+            if ret != 0 or (nvl == NULL and block_flag == 0):
+                raise self.get_error()
             if nvl == NULL:
                 # This is okay when non blocking behavior is desired
                 return None
@@ -964,7 +965,7 @@ cdef class ZFS(object):
 
 
     IF HAVE_ZFS_FOREACH_MOUNTPOINT:
-        cdef int zpool_enable_datasets(self, str name, int enable_shares) nogil:
+        cdef int zpool_enable_datasets(self, str name, int enable_shares):
             cdef libzfs.zfs_handle_t* handle
             cdef const char *c_name
             cdef libzfs.get_all_cb_t cb
@@ -1253,23 +1254,23 @@ cdef class ZFS(object):
             cdef iter_state iter
             cdef libzfs.zpool_handle_t *handle
 
+            cdef int alloc_failed = 0
             try:
                 with nogil:
                     iter.length = 0
                     iter.error = 0
                     iter.array = <uintptr_t *>malloc(32 * sizeof(uintptr_t))
                     if not iter.array:
-                        raise MemoryError()
+                        alloc_failed = 1
+                    else:
+                        iter.alloc = 32
+                        libzfs.zpool_iter(
+                            self.handle,
+                            cython.cast(libzfs.zpool_iter_f, self.__iterate_pools),
+                            <void*>&iter
+                        )
 
-                    iter.alloc = 32
-
-                    libzfs.zpool_iter(
-                        self.handle,
-                        cython.cast(libzfs.zpool_iter_f, self.__iterate_pools),
-                        <void*>&iter
-                    )
-
-                if iter.error:
+                if alloc_failed or iter.error:
                     raise MemoryError()
 
                 for h in range(0, iter.length):
@@ -3646,15 +3647,25 @@ cdef class ZFSResource(ZFSObject):
         cdef iter_state iter
         cdef int recursion = allow_recursion
 
+        cdef int alloc_failed = 0
         with nogil:
             iter.length = 0
             iter.error = 0
             iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
             if not iter.array:
-                raise MemoryError()
+                alloc_failed = 1
+            else:
+                iter.alloc = 128
+                ZFS.__iterate_dependents(
+                    self.handle,
+                    0,
+                    recursion,
+                    cython.cast(libzfs.zfs_iter_f, ZFSResource.__iterate),
+                    <void*>&iter
+                )
 
-            iter.alloc = 128
-            ZFS.__iterate_dependents(self.handle, 0, recursion, ZFSResource.__iterate, <void*>&iter)
+        if alloc_failed:
+            raise MemoryError()
 
         try:
             if iter.error:
@@ -3907,7 +3918,14 @@ cdef class ZFSDataset(ZFSResource):
                 raise MemoryError()
 
             iter.alloc = 128
-            libzfs.zfs_iter_snapshots(self.handle, False, ZFSResource.__iterate, <void*>&iter, 0, 0)
+            libzfs.zfs_iter_snapshots(
+                self.handle,
+                False,
+                cython.cast(libzfs.zfs_iter_f, ZFSResource.__iterate),
+                <void*>&iter,
+                0,
+                0
+            )
 
             try:
                 if iter.error:
@@ -3942,7 +3960,12 @@ cdef class ZFSDataset(ZFSResource):
                 raise MemoryError()
 
             iter.alloc = 128
-            ZFS.__iterate_bookmarks(self.handle, 0, ZFSResource.__iterate, <void *>&iter)
+            ZFS.__iterate_bookmarks(
+                self.handle,
+                0,
+                cython.cast(libzfs.zfs_iter_f, ZFSResource.__iterate),
+                <void *>&iter
+            )
 
             try:
                 if iter.error:
