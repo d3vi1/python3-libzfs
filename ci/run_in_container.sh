@@ -95,6 +95,8 @@ install_ubuntu_libzfs() {
   local pkg
   for pkg in libzfs-dev libzfs4linux-dev libzfs2linux-dev; do
     if apt-get install -y --no-install-recommends "${pkg}"; then
+      echo "==> dpkg -L ${pkg}"
+      dpkg -L "${pkg}" || true
       return
     fi
   done
@@ -122,6 +124,19 @@ install_rocky_libzfs() {
     if ! dnf -y --enablerepo=zfs install libzfs5 libzfs5-devel; then
       dnf -y --enablerepo=zfs install libzfs libzfs-devel
     fi
+  fi
+
+  if rpm -q zfs-devel >/dev/null 2>&1; then
+    echo "==> rpm -ql zfs-devel"
+    rpm -ql zfs-devel || true
+  fi
+  if rpm -q libzfs5-devel >/dev/null 2>&1; then
+    echo "==> rpm -ql libzfs5-devel"
+    rpm -ql libzfs5-devel || true
+  fi
+  if rpm -q libzfs-devel >/dev/null 2>&1; then
+    echo "==> rpm -ql libzfs-devel"
+    rpm -ql libzfs-devel || true
   fi
 
   if ! rpm -q libzfs5-devel >/dev/null 2>&1 \
