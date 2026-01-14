@@ -22,7 +22,7 @@ download_openzfs_headers() {
   mkdir -p /tmp/openzfs-src
   curl -fsSL "${url}" | tar -xz -C /tmp/openzfs-src --strip-components=1
 
-  export CPPFLAGS="-I/tmp/openzfs-src/include -I/tmp/openzfs-src/lib/libspl/include -I/tmp/openzfs-src/lib/libzfs"
+  export CPPFLAGS="-I/tmp/openzfs-src/include -I/tmp/openzfs-src/lib/libspl/include -I/tmp/openzfs-src/lib/libspl/include/os/linux -I/tmp/openzfs-src/lib/libzfs"
 }
 
 ensure_zfs_header() {
@@ -62,13 +62,13 @@ ensure_zfs_header() {
 
   local extra
   for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs \
-    /tmp/openzfs-src/lib/libspl/include /tmp/openzfs-src/lib/libzfs; do
+    /tmp/openzfs-src/lib/libspl/include /tmp/openzfs-src/lib/libspl/include/os/linux /tmp/openzfs-src/lib/libzfs; do
     if [[ -d "${extra}" ]]; then
       export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
     fi
   done
 
-  export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+  export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
 add_pkg_config_cppflags() {
