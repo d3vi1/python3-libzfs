@@ -28,7 +28,7 @@ CHECKS = {
     },
     "zpool_import_status": {
         "header": "include/libzfs.h",
-        "param_counts": {2},
+        "param_counts": {2, 3},
         "const_param_index": 1,
     },
     "zfs_crypto_load_key": {
