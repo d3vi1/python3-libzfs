@@ -136,6 +136,7 @@ SECTION_TITLE([RUNNING TESTS ON zfs.h HEADER])
 AC_CHECK_HEADERS([sys/types.h], [], [AC_MSG_ERROR(A working sys/types header is required)])
 AC_CHECK_HEADERS([sys/fs/zfs.h], [], [AC_MSG_ERROR(A working zfs header is required)],[
 	#include <sys/types.h>
+	#include <stdint.h>
 ])
 
 
@@ -163,7 +164,9 @@ dnl Check zfs_prop_valid_for_type signature
 AC_MSG_NOTICE([Checking signature of zfs_prop_valid_for_type in zfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zfs_prop_valid_for_type(0, ZFS_TYPE_VOLUME, 0)
 		],
@@ -178,7 +181,9 @@ dnl Checking if VDEV_AUX_ASHIFT_TOO_BIG enum exists
 AC_MSG_NOTICE([Checking existence of VDEV_AUX_ASHIFT_TOO_BIG enum in zfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			VDEV_AUX_ASHIFT_TOO_BIG == VDEV_AUX_ASHIFT_TOO_BIG /* ; */
 		]
@@ -193,7 +198,9 @@ dnl Checking zpool_errata_t existence
 AC_MSG_NOTICE([Checking existence of zpool_errata_t])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zpool_errata_t errata;
 		]
@@ -208,7 +215,9 @@ dnl Checking typedef pool_scrub_cmd_t in zfs header
 AC_MSG_NOTICE([Checking typedef pool_scrub_cmt_t in zfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			int i = sizeof(pool_scrub_cmd_t);
 			i = i; /* ; */
@@ -221,7 +230,9 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 
 AC_MSG_NOTICE([Verifying existence of zpool_rewind_policy_t])
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zpool_rewind_policy_t policy;
 		]
@@ -233,7 +244,9 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 
 AC_MSG_NOTICE([Verifying existence of zpool_load_policy_t])
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zpool_load_policy_t policy;
 		]
@@ -306,6 +319,7 @@ SECTION_TITLE([RUNNING TESTS ON libzfs.h HEADER])
 if [[ "$zof" = false ]]; then
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
+		#include <stdint.h>
 		#include <sys/mnttab.h>
 		#include <sys/fs/zfs.h>
 		#include <sys/zfs_ioctl.h>
@@ -313,6 +327,7 @@ if [[ "$zof" = false ]]; then
 else
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
+		#include <stdint.h>
 		#include <sys/mnttab.h>
 		#include <sys/fs/zfs.h>
 	])
@@ -508,7 +523,9 @@ dnl Checking function presence of vs_*_ashift existence
 AC_MSG_NOTICE([Checking existence of vs_*_ashift in fs/zfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 		 	vdev_stat_t vdev_stat;
 			vdev_stat.vs_configured_ashift = 1;

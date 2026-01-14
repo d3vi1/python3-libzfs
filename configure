@@ -3595,6 +3595,7 @@ done
 do :
   ac_fn_c_check_header_compile "$LINENO" "sys/fs/zfs.h" "ac_cv_header_sys_fs_zfs_h" "
 	#include <sys/types.h>
+	#include <stdint.h>
 
 "
 if test "x$ac_cv_header_sys_fs_zfs_h" = xyes
@@ -3617,6 +3618,8 @@ then :
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3667,6 +3670,8 @@ then :
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3710,6 +3715,8 @@ printf "%s\n" "$as_me: Checking signature of zfs_prop_valid_for_type in zfs head
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3741,6 +3748,8 @@ printf "%s\n" "$as_me: Checking existence of VDEV_AUX_ASHIFT_TOO_BIG enum in zfs
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3773,6 +3782,8 @@ printf "%s\n" "$as_me: Checking existence of zpool_errata_t" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3805,6 +3816,8 @@ printf "%s\n" "$as_me: Checking typedef pool_scrub_cmt_t in zfs header" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3836,6 +3849,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 printf "%s\n" "$as_me: Verifying existence of zpool_rewind_policy_t" >&6;}
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -3867,6 +3882,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 printf "%s\n" "$as_me: Verifying existence of zpool_load_policy_t" >&6;}
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)
@@ -4037,7 +4054,9 @@ do :
   ac_fn_c_check_header_compile "$LINENO" "libzfs.h" "ac_cv_header_libzfs_h" "
 		#include <sys/types.h>
 		#include <sys/mnttab.h>
-		#include <sys/fs/zfs.h>
+		#include <sys/types.h>
+#include <stdint.h>
+#include <sys/fs/zfs.h>
 		#include <sys/zfs_ioctl.h>
 
 "
@@ -4056,7 +4075,9 @@ do :
   ac_fn_c_check_header_compile "$LINENO" "libzfs.h" "ac_cv_header_libzfs_h" "
 		#include <sys/types.h>
 		#include <sys/mnttab.h>
-		#include <sys/fs/zfs.h>
+		#include <sys/types.h>
+#include <stdint.h>
+#include <sys/fs/zfs.h>
 
 "
 if test "x$ac_cv_header_libzfs_h" = xyes
@@ -4495,6 +4516,8 @@ printf "%s\n" "$as_me: Checking existence of vs_*_ashift in fs/zfs.h header" >&6
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <sys/types.h>
+#include <stdint.h>
 #include <sys/fs/zfs.h>
 int
 main (void)

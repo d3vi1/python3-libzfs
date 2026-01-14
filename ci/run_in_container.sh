@@ -43,6 +43,15 @@ ensure_zfs_header() {
     export CPPFLAGS="${CPPFLAGS:-} -I${libzfs_header%/libzfs.h}"
   fi
 
+  local libspl_root
+  libspl_root=$(find /usr/src -path "*/lib/libspl/include" -type d -print -quit 2>/dev/null || true)
+  if [[ -n "${libspl_root}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${libspl_root}"
+    if [[ -d "${libspl_root}/os/linux" ]]; then
+      export CPPFLAGS="${CPPFLAGS:-} -I${libspl_root}/os/linux"
+    fi
+  fi
+
   local extra
   for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs; do
     if [[ -d "${extra}" ]]; then
