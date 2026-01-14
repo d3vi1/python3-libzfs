@@ -32,7 +32,7 @@ ensure_zfs_header() {
     header=$(rpm -ql libzfs5-devel 2>/dev/null | grep -m1 '/sys/fs/zfs.h$' || true)
   fi
   if [[ -z "${header}" ]]; then
-    for root in /usr/include/zfs /usr/include/libzfs /usr/src /usr/local/include /usr/include /tmp/openzfs-src/include; do
+    for root in /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /tmp/openzfs-src/include /usr/src; do
       header=$(find "${root}" -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
       if [[ -n "${header}" ]]; then
         break
@@ -46,6 +46,20 @@ ensure_zfs_header() {
 
   local inc_root=${header%/sys/fs/zfs.h}
   export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
+
+  local ioctl_header
+  ioctl_header=$(find /usr/local/include /usr/include /usr/include/zfs /usr/src /tmp/openzfs-src/include \
+    -path "*/sys/zfs_ioctl.h" -print -quit 2>/dev/null || true)
+  if [[ -n "${ioctl_header}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${ioctl_header%/sys/zfs_ioctl.h}"
+  fi
+
+  local libzfs_header
+  libzfs_header=$(find /usr/local/include /usr/include /usr/include/libzfs /usr/src /tmp/openzfs-src/include \
+    -path "*/libzfs.h" -print -quit 2>/dev/null || true)
+  if [[ -n "${libzfs_header}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${libzfs_header%/libzfs.h}"
+  fi
 
   local extra
   for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs; do
@@ -96,10 +110,6 @@ install_ubuntu_libzfs() {
       return
     fi
   done
-  if apt-get install -y --no-install-recommends zfs-dkms; then
-    return
-  fi
-
   local ver
   ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
   if [[ -z "${ver}" ]]; then
