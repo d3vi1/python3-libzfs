@@ -1,0 +1,34 @@
+name: Header Compatibility
+
+on:
+  pull_request:
+  push:
+    branches:
+      - zfs-2.2
+      - main
+
+jobs:
+  header-compat:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: ubuntu-focal
+            zfs_tag: zfs-2.2.9
+          - name: ubuntu-jammy
+            zfs_tag: zfs-2.2.9
+          - name: ubuntu-questing
+            zfs_tag: zfs-2.3.4
+          - name: rocky-el8
+            zfs_tag: zfs-2.1.16
+          - name: rocky-el9
+            zfs_tag: zfs-2.2.9
+    name: ${{ matrix.target.name }} (${{ matrix.target.zfs_tag }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Header compatibility check
+        run: python3 ci/header_compat.py --tag "${{ matrix.target.zfs_tag }}"
