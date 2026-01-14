@@ -556,11 +556,25 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			const char *msg = NULL;
-			zpool_import_status(NULL, &msg) /* ; */
+			zpool_import_status(NULL, &msg, NULL) /* ; */
 		]
 	)],
 	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 1) AC_MSG_NOTICE([const char **])],
 	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 0) AC_MSG_NOTICE([char **])]
+)
+
+dnl Checking parameters of zpool_import_status
+
+AC_MSG_NOTICE([Checking zpool_import_status parameters])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			zpool_import_status(NULL, NULL, NULL) /* ; */
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_PARAMS, 3) AC_MSG_NOTICE([3 params])],
+	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_PARAMS, 2) AC_MSG_NOTICE([2 params])]
 )
 
 dnl Checking parameters of zpool_expand_proplist

@@ -744,6 +744,7 @@ HAVE_ZPOOL_SCAN
 HAVE_ZPOOL_GET_STATUS
 HAVE_ZPOOL_GET_STATUS_CONST
 HAVE_ZPOOL_IMPORT_STATUS_CONST
+HAVE_ZPOOL_IMPORT_STATUS_PARAMS
 HAVE_ZPOOL_ADD_PARAMS
 HAVE_ZPOOL_EXPAND_PROPLIST_PARAMS
 HAVE_ZPOOL_ENABLE_DATASETS_PARAMS
@@ -4593,7 +4594,7 @@ main (void)
 {
 
 			const char *msg = NULL;
-			zpool_import_status(NULL, &msg) /* ; */
+			zpool_import_status(NULL, &msg, NULL) /* ; */
 
 
   ;
@@ -4609,6 +4610,38 @@ else $as_nop
   HAVE_ZPOOL_IMPORT_STATUS_CONST=0
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char **" >&5
 printf "%s\n" "$as_me: char **" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_import_status parameters" >&5
+printf "%s\n" "$as_me: Checking zpool_import_status parameters" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_import_status(NULL, NULL, NULL) /* ; */
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_IMPORT_STATUS_PARAMS=3
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 params" >&5
+printf "%s\n" "$as_me: 3 params" >&6;}
+else $as_nop
+  HAVE_ZPOOL_IMPORT_STATUS_PARAMS=2
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 2 params" >&5
+printf "%s\n" "$as_me: 2 params" >&6;}
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
