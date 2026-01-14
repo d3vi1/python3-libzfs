@@ -28,69 +28,50 @@ cdef extern from *:
     #endif
     #endif
 
-    #if defined(__GNUC__) || defined(__clang__)
-    enum { PYZFS_NVPAIR_VALUE_STRING_MUT =
-      __builtin_types_compatible_p(__typeof__(&nvpair_value_string),
-          int (*)(const nvpair_t *, char **)) ||
-      __builtin_types_compatible_p(__typeof__(&nvpair_value_string),
-          int (*)(nvpair_t *, char **)) };
-    enum { PYZFS_NVPAIR_VALUE_STRING_ARRAY_MUT =
-      __builtin_types_compatible_p(__typeof__(&nvpair_value_string_array),
-          int (*)(nvpair_t *, char ***, uint_t *)) ||
-      __builtin_types_compatible_p(__typeof__(&nvpair_value_string_array),
-          int (*)(const nvpair_t *, char ***, uint_t *)) };
-    enum { PYZFS_NVLIST_ADD_STRING_ARRAY_MUT =
-      __builtin_types_compatible_p(__typeof__(&nvlist_add_string_array),
-          int (*)(nvlist_t *, const char *, char * const *, uint_t)) };
-    enum { PYZFS_NVLIST_ADD_NVLIST_ARRAY_MUT =
-      __builtin_types_compatible_p(__typeof__(&nvlist_add_nvlist_array),
-          int (*)(nvlist_t *, const char *, nvlist_t **, uint_t)) };
-    #else
-    enum { PYZFS_NVPAIR_VALUE_STRING_MUT = 0 };
-    enum { PYZFS_NVPAIR_VALUE_STRING_ARRAY_MUT = 0 };
-    enum { PYZFS_NVLIST_ADD_STRING_ARRAY_MUT = 0 };
-    enum { PYZFS_NVLIST_ADD_NVLIST_ARRAY_MUT = 0 };
+    #ifndef PYZFS_NVPAIR_VALUE_STRING_CONST
+    #define PYZFS_NVPAIR_VALUE_STRING_CONST 1
+    #endif
+    #ifndef PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST
+    #define PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST 1
+    #endif
+    #ifndef PYZFS_NVLIST_ADD_STRING_ARRAY_CONST
+    #define PYZFS_NVLIST_ADD_STRING_ARRAY_CONST 1
+    #endif
+    #ifndef PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST
+    #define PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST 1
     #endif
 
     static inline int pyzfs_nvpair_value_string(nvpair_t *pair, const char **out) {
-    #if defined(__GNUC__) || defined(__clang__)
-      return __builtin_choose_expr(PYZFS_NVPAIR_VALUE_STRING_MUT,
-          nvpair_value_string(pair, (char **)out),
-          nvpair_value_string(pair, out));
-    #else
+    #if PYZFS_NVPAIR_VALUE_STRING_CONST
       return nvpair_value_string(pair, out);
+    #else
+      return nvpair_value_string(pair, (char **)out);
     #endif
     }
 
     static inline int pyzfs_nvpair_value_string_array(nvpair_t *pair, const char ***out, uint_t *len) {
-    #if defined(__GNUC__) || defined(__clang__)
-      return __builtin_choose_expr(PYZFS_NVPAIR_VALUE_STRING_ARRAY_MUT,
-          nvpair_value_string_array(pair, (char ***)out, len),
-          nvpair_value_string_array(pair, out, len));
-    #else
+    #if PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST
       return nvpair_value_string_array(pair, out, len);
+    #else
+      return nvpair_value_string_array(pair, (char ***)out, len);
     #endif
     }
 
     static inline int pyzfs_nvlist_add_string_array(
         nvlist_t *nvl, const char *name, const char * const *arr, uint_t count) {
-    #if defined(__GNUC__) || defined(__clang__)
-      return __builtin_choose_expr(PYZFS_NVLIST_ADD_STRING_ARRAY_MUT,
-          nvlist_add_string_array(nvl, name, (char * const *)arr, count),
-          nvlist_add_string_array(nvl, name, arr, count));
-    #else
+    #if PYZFS_NVLIST_ADD_STRING_ARRAY_CONST
       return nvlist_add_string_array(nvl, name, arr, count);
+    #else
+      return nvlist_add_string_array(nvl, name, (char * const *)arr, count);
     #endif
     }
 
     static inline int pyzfs_nvlist_add_nvlist_array(
         nvlist_t *nvl, const char *name, const nvlist_t * const *arr, uint_t count) {
-    #if defined(__GNUC__) || defined(__clang__)
-      return __builtin_choose_expr(PYZFS_NVLIST_ADD_NVLIST_ARRAY_MUT,
-          nvlist_add_nvlist_array(nvl, name, (nvlist_t **)arr, count),
-          nvlist_add_nvlist_array(nvl, name, arr, count));
-    #else
+    #if PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST
       return nvlist_add_nvlist_array(nvl, name, arr, count);
+    #else
+      return nvlist_add_nvlist_array(nvl, name, (nvlist_t **)arr, count);
     #endif
     }
     """

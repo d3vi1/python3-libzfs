@@ -315,24 +315,16 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 
 SECTION_TITLE([RUNNING TESTS ON libzfs.h HEADER])
 
-AC_CHECK_HEADERS([sys/mnttab.h])
-
 if [[ "$zof" = false ]]; then
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
 		#include <stdint.h>
-#ifdef HAVE_SYS_MNTTAB_H
-		#include <sys/mnttab.h>
-#endif
 		#include <sys/fs/zfs.h>
 	])
 else
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
 		#include <stdint.h>
-#ifdef HAVE_SYS_MNTTAB_H
-		#include <sys/mnttab.h>
-#endif
 		#include <sys/fs/zfs.h>
 	])
 fi
@@ -1458,6 +1450,91 @@ AC_CHECK_HEADERS([sys/nvpair.h],
 	[]
 )
 
+AC_MSG_NOTICE([Checking nvpair_value_string constness])
+AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const char *value = NULL;
+			nvpair_value_string(NULL, &value);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_CONST, 1) AC_MSG_NOTICE([const char **])],
+	[AC_MSG_NOTICE([char **])]
+)
+
+AC_MSG_NOTICE([Checking nvpair_value_string_array constness])
+AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const char **value = NULL;
+			uint_t len = 0;
+			nvpair_value_string_array(NULL, &value, &len);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST, 1) AC_MSG_NOTICE([const char ***])],
+	[AC_MSG_NOTICE([char ***])]
+)
+
+AC_MSG_NOTICE([Checking nvlist_add_string_array constness])
+AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const char *values[] = { NULL };
+			nvlist_add_string_array(NULL, "name", values, 0);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 1) AC_MSG_NOTICE([const char * const *])],
+	[AC_MSG_NOTICE([char * const *])]
+)
+
+AC_MSG_NOTICE([Checking nvlist_add_nvlist_array constness])
+AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const nvlist_t *lists[] = { NULL };
+			nvlist_add_nvlist_array(NULL, "name", lists, 0);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 1) AC_MSG_NOTICE([const nvlist_t * const *])],
+	[AC_MSG_NOTICE([nvlist_t **])]
+)
+
 
 SECTION_TITLE([RUNNING TESTS ON sys/zfs_context_userland.h HEADER])
 
@@ -1482,6 +1559,12 @@ then
 		[AC_SUBST(HAVE_THREAD_INIT_FINI, 0) AC_MSG_NOTICE([NOT FOUND])]
 	)
 fi
+
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVPAIR_VALUE_STRING_CONST=${PYZFS_NVPAIR_VALUE_STRING_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=${PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVLIST_ADD_STRING_ARRAY_CONST=${PYZFS_NVLIST_ADD_STRING_ARRAY_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=${PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_ZPOOL_GET_STATUS_CONST=${HAVE_ZPOOL_GET_STATUS_CONST}"
 
 SECTION_TITLE([GENERATING FILES])
 

@@ -4048,27 +4048,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 
 
 
-for ac_header in sys/mnttab.h
-do :
-  ac_fn_c_check_header_compile "$LINENO" "sys/mnttab.h" "ac_cv_header_sys_mnttab_h" "
-"
-if test "x$ac_cv_header_sys_mnttab_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_MNTTAB_H 1" >>confdefs.h
-
-fi
-
-done
-
-
 if [ "$zof" = false ]; then
 	       for ac_header in libzfs.h
 do :
   ac_fn_c_check_header_compile "$LINENO" "libzfs.h" "ac_cv_header_libzfs_h" "
 		#include <sys/types.h>
-#ifdef HAVE_SYS_MNTTAB_H
-		#include <sys/mnttab.h>
-#endif
 		#include <sys/types.h>
 #include <stdint.h>
 #include <sys/fs/zfs.h>
@@ -4088,9 +4072,6 @@ else
 do :
   ac_fn_c_check_header_compile "$LINENO" "libzfs.h" "ac_cv_header_libzfs_h" "
 		#include <sys/types.h>
-#ifdef HAVE_SYS_MNTTAB_H
-		#include <sys/mnttab.h>
-#endif
 		#include <sys/types.h>
 #include <stdint.h>
 #include <sys/fs/zfs.h>
@@ -6940,6 +6921,152 @@ done
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvpair_value_string constness" >&5
+printf "%s\n" "$as_me: Checking nvpair_value_string constness" >&6;}
+PYZFS_NVPAIR_VALUE_STRING_CONST=0
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if defined(__has_include)
+#if __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
+#elif __has_include(<libnvpair.h>)
+#include <libnvpair.h>
+#endif
+#else
+#include <sys/nvpair.h>
+#endif
+int
+main (void)
+{
+
+			const char *value = NULL;
+			nvpair_value_string(NULL, &value);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  PYZFS_NVPAIR_VALUE_STRING_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char **" >&5
+printf "%s\n" "$as_me: const char **" >&6;}
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char **" >&5
+printf "%s\n" "$as_me: char **" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvpair_value_string_array constness" >&5
+printf "%s\n" "$as_me: Checking nvpair_value_string_array constness" >&6;}
+PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=0
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if defined(__has_include)
+#if __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
+#elif __has_include(<libnvpair.h>)
+#include <libnvpair.h>
+#endif
+#else
+#include <sys/nvpair.h>
+#endif
+int
+main (void)
+{
+
+			const char **value = NULL;
+			uint_t len = 0;
+			nvpair_value_string_array(NULL, &value, &len);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char ***" >&5
+printf "%s\n" "$as_me: const char ***" >&6;}
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char ***" >&5
+printf "%s\n" "$as_me: char ***" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvlist_add_string_array constness" >&5
+printf "%s\n" "$as_me: Checking nvlist_add_string_array constness" >&6;}
+PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=0
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if defined(__has_include)
+#if __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
+#elif __has_include(<libnvpair.h>)
+#include <libnvpair.h>
+#endif
+#else
+#include <sys/nvpair.h>
+#endif
+int
+main (void)
+{
+
+			const char *values[] = { NULL };
+			nvlist_add_string_array(NULL, "name", values, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char * const *" >&5
+printf "%s\n" "$as_me: const char * const *" >&6;}
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char * const *" >&5
+printf "%s\n" "$as_me: char * const *" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvlist_add_nvlist_array constness" >&5
+printf "%s\n" "$as_me: Checking nvlist_add_nvlist_array constness" >&6;}
+PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=0
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if defined(__has_include)
+#if __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
+#elif __has_include(<libnvpair.h>)
+#include <libnvpair.h>
+#endif
+#else
+#include <sys/nvpair.h>
+#endif
+int
+main (void)
+{
+
+			const nvlist_t *lists[] = { NULL };
+			nvlist_add_nvlist_array(NULL, "name", lists, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const nvlist_t * const *" >&5
+printf "%s\n" "$as_me: const nvlist_t * const *" >&6;}
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: nvlist_t **" >&5
+printf "%s\n" "$as_me: nvlist_t **" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+
 	echo >& 6
 	echo '   RUNNING TESTS ON sys/zfs_context_userland.h HEADER   ' | sed -e's/./-/g' >&6
 	echo '   RUNNING TESTS ON sys/zfs_context_userland.h HEADER' >& 6
@@ -6995,6 +7122,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 fi
+
+CPPFLAGS="$CPPFLAGS -DPYZFS_NVPAIR_VALUE_STRING_CONST=$PYZFS_NVPAIR_VALUE_STRING_CONST"
+CPPFLAGS="$CPPFLAGS -DPYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=$PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST"
+CPPFLAGS="$CPPFLAGS -DPYZFS_NVLIST_ADD_STRING_ARRAY_CONST=$PYZFS_NVLIST_ADD_STRING_ARRAY_CONST"
+CPPFLAGS="$CPPFLAGS -DPYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=$PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST"
+CPPFLAGS="$CPPFLAGS -DPYZFS_ZPOOL_GET_STATUS_CONST=$HAVE_ZPOOL_GET_STATUS_CONST"
 
 
 	echo >& 6
