@@ -169,6 +169,7 @@ setup(
             ["libzfs.pyx"],
             libraries=libraries,
             extra_compile_args=extra_compile_args,
+            cython_directives={'show_performance_hints': False},
             cython_include_dirs=["./pxd"],
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,

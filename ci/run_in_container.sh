@@ -5,7 +5,14 @@ DISTRO=${1:?distro name required}
 
 apt_install() {
   apt-get install -y --no-install-recommends "$@" \
+    > >(grep -v 'update-alternatives: warning:' || true) \
     2> >(grep -v 'update-alternatives: warning:' >&2 || true)
+}
+
+pip_install() {
+  python3 -m pip install "$@" \
+    > >(grep -v "^WARNING: Running pip as the 'root' user" || true) \
+    2> >(grep -v "^WARNING: Running pip as the 'root' user" >&2 || true)
 }
 
 install_common() {
@@ -28,7 +35,7 @@ PY
     cython_spec="cython>=3.0.11"
   fi
 
-  python3 -m pip install "${pip_args[@]}" "${cython_spec}"
+  pip_install "${pip_args[@]}" "${cython_spec}"
 }
 
 download_openzfs_headers() {
