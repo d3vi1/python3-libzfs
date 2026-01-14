@@ -29,6 +29,16 @@ include "config.pxi"
 include "nvpair.pxi"
 include "converter.pxi"
 
+cdef extern from *:
+    """
+    #ifdef likely
+    #undef likely
+    #endif
+    #ifdef unlikely
+    #undef unlikely
+    #endif
+    """
+
 
 class DatasetType(enum.IntEnum):
     FILESYSTEM = zfs.ZFS_TYPE_FILESYSTEM
