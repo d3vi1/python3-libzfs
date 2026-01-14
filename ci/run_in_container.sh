@@ -51,11 +51,13 @@ install_ubuntu_libzfs() {
 
 install_rocky_libzfs() {
   local release_rpm=$1
-  dnf -y install dnf-plugins-core ca-certificates curl
+  dnf -y install dnf-plugins-core ca-certificates curl tar
   dnf -y install "${release_rpm}"
 
-  if ! dnf -y install libzfs libzfs-devel; then
-    dnf -y install zfs zfs-devel
+  dnf config-manager --set-enabled zfs || true
+
+  if ! dnf -y --enablerepo=zfs install zfs zfs-devel; then
+    dnf -y --enablerepo=zfs install libzfs libzfs-devel
   fi
 
   if ! rpm -q libzfs-devel >/dev/null 2>&1 && ! rpm -q zfs-devel >/dev/null 2>&1; then
