@@ -36,7 +36,6 @@ from setuptools import setup
 try:
     from Cython.Distutils import build_ext
     from Cython.Distutils.extension import Extension
-    from Cython.Compiler import Errors as cython_errors
 except ImportError:
     raise ImportError("This package requires Cython to build properly. Please install it first.")
 
@@ -55,17 +54,6 @@ if platform.system().lower() == 'freebsd':
 
 extra_link_args = list(getattr(config, 'LDFLAGS', []))
 library_dirs = []
-
-
-def compiler_is_gcc_or_clang():
-    cc = os.environ.get('CC') or sysconfig.get_config_var('CC') or ''
-    return 'gcc' in cc or 'clang' in cc
-
-
-try:
-    cython_errors.LEVEL = 2
-except Exception:
-    pass
 
 
 def pkg_config_libs():
@@ -148,24 +136,7 @@ else:
         )
 
 extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
-if platform.system().lower() == 'linux' and compiler_is_gcc_or_clang():
-    for flag in (
-        '-Wno-unused-value',
-        '-Wno-maybe-uninitialized',
-        '-Wno-stringop-truncation',
-        '-Wno-cpp',
-    ):
-        if flag not in extra_compile_args:
-            extra_compile_args.append(flag)
-
-
-cython_directives = {}
-try:
-    from Cython.Compiler import Options as cython_options
-    if 'show_performance_hints' in cython_options.directive_defaults:
-        cython_directives['show_performance_hints'] = False
-except Exception:
-    pass
+define_macros = [('CYTHON_FALLTHROUGH', '((void)0)')]
 
 setup(
     name='libzfs',
@@ -177,7 +148,7 @@ setup(
             ["libzfs.pyx"],
             libraries=libraries,
             extra_compile_args=extra_compile_args,
-            cython_directives=cython_directives,
+            define_macros=define_macros,
             cython_include_dirs=["./pxd"],
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,

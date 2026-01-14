@@ -28,46 +28,62 @@ cdef extern from *:
     #endif
     #endif
 
-    #ifndef PYZFS_DIAG_PUSH
     #if defined(__GNUC__) || defined(__clang__)
-    #define PYZFS_DIAG_PUSH _Pragma("GCC diagnostic push")
-    #define PYZFS_DIAG_POP _Pragma("GCC diagnostic pop")
-    #define PYZFS_DIAG_IGNORE_INCOMPAT _Pragma("GCC diagnostic ignored \\\"-Wincompatible-pointer-types\\\"")
+    #define PYZFS_NVPAIR_VALUE_STRING_CONST \
+      (__builtin_types_compatible_p(__typeof__(nvpair_value_string), \
+          int (*)(const nvpair_t *, const char **)) || \
+       __builtin_types_compatible_p(__typeof__(nvpair_value_string), \
+          int (*)(nvpair_t *, const char **)))
+    #define PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST \
+      (__builtin_types_compatible_p(__typeof__(nvpair_value_string_array), \
+          int (*)(nvpair_t *, const char ***, uint_t *)) || \
+       __builtin_types_compatible_p(__typeof__(nvpair_value_string_array), \
+          int (*)(const nvpair_t *, const char ***, uint_t *)))
+    #define PYZFS_NVLIST_ADD_STRING_ARRAY_CONST \
+      __builtin_types_compatible_p(__typeof__(nvlist_add_string_array), \
+          int (*)(nvlist_t *, const char *, const char * const *, uint_t))
+    #define PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST \
+      __builtin_types_compatible_p(__typeof__(nvlist_add_nvlist_array), \
+          int (*)(nvlist_t *, const char *, const nvlist_t * const *, uint_t))
     #else
-    #define PYZFS_DIAG_PUSH
-    #define PYZFS_DIAG_POP
-    #define PYZFS_DIAG_IGNORE_INCOMPAT
-    #endif
+    #define PYZFS_NVPAIR_VALUE_STRING_CONST 1
+    #define PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST 1
+    #define PYZFS_NVLIST_ADD_STRING_ARRAY_CONST 1
+    #define PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST 1
     #endif
 
     static inline int pyzfs_nvpair_value_string(nvpair_t *pair, const char **out) {
-      PYZFS_DIAG_PUSH;
-      PYZFS_DIAG_IGNORE_INCOMPAT;
+    #if PYZFS_NVPAIR_VALUE_STRING_CONST
+      return nvpair_value_string(pair, out);
+    #else
       return nvpair_value_string(pair, (char **)out);
-      PYZFS_DIAG_POP;
+    #endif
     }
 
     static inline int pyzfs_nvpair_value_string_array(nvpair_t *pair, const char ***out, uint_t *len) {
-      PYZFS_DIAG_PUSH;
-      PYZFS_DIAG_IGNORE_INCOMPAT;
+    #if PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST
+      return nvpair_value_string_array(pair, out, len);
+    #else
       return nvpair_value_string_array(pair, (char ***)out, len);
-      PYZFS_DIAG_POP;
+    #endif
     }
 
     static inline int pyzfs_nvlist_add_string_array(
         nvlist_t *nvl, const char *name, const char * const *arr, uint_t count) {
-      PYZFS_DIAG_PUSH;
-      PYZFS_DIAG_IGNORE_INCOMPAT;
+    #if PYZFS_NVLIST_ADD_STRING_ARRAY_CONST
+      return nvlist_add_string_array(nvl, name, arr, count);
+    #else
       return nvlist_add_string_array(nvl, name, (char * const *)arr, count);
-      PYZFS_DIAG_POP;
+    #endif
     }
 
     static inline int pyzfs_nvlist_add_nvlist_array(
         nvlist_t *nvl, const char *name, const nvlist_t * const *arr, uint_t count) {
-      PYZFS_DIAG_PUSH;
-      PYZFS_DIAG_IGNORE_INCOMPAT;
+    #if PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST
+      return nvlist_add_nvlist_array(nvl, name, arr, count);
+    #else
       return nvlist_add_nvlist_array(nvl, name, (nvlist_t **)arr, count);
-      PYZFS_DIAG_POP;
+    #endif
     }
     """
     int pyzfs_nvpair_value_string(nvpair.nvpair_t *, const char **)

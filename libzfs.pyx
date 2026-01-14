@@ -48,24 +48,21 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
         #endif
         #endif
 
-        #ifndef PYZFS_DIAG_PUSH
         #if defined(__GNUC__) || defined(__clang__)
-        #define PYZFS_DIAG_PUSH _Pragma("GCC diagnostic push")
-        #define PYZFS_DIAG_POP _Pragma("GCC diagnostic pop")
-        #define PYZFS_DIAG_IGNORE_INCOMPAT _Pragma("GCC diagnostic ignored \\\"-Wincompatible-pointer-types\\\"")
+        #define PYZFS_ZPOOL_GET_STATUS_CONST \
+          __builtin_types_compatible_p(__typeof__(zpool_get_status), \
+              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *))
         #else
-        #define PYZFS_DIAG_PUSH
-        #define PYZFS_DIAG_POP
-        #define PYZFS_DIAG_IGNORE_INCOMPAT
-        #endif
+        #define PYZFS_ZPOOL_GET_STATUS_CONST 1
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
-          PYZFS_DIAG_PUSH;
-          PYZFS_DIAG_IGNORE_INCOMPAT;
+        #if PYZFS_ZPOOL_GET_STATUS_CONST
+          return zpool_get_status(zhp, msg, err);
+        #else
           return zpool_get_status(zhp, (char **)msg, err);
-          PYZFS_DIAG_POP;
+        #endif
         }
         """
         zpool_status_t pyzfs_zpool_get_status(
@@ -79,24 +76,21 @@ ELSE:
         #endif
         #endif
 
-        #ifndef PYZFS_DIAG_PUSH
         #if defined(__GNUC__) || defined(__clang__)
-        #define PYZFS_DIAG_PUSH _Pragma("GCC diagnostic push")
-        #define PYZFS_DIAG_POP _Pragma("GCC diagnostic pop")
-        #define PYZFS_DIAG_IGNORE_INCOMPAT _Pragma("GCC diagnostic ignored \\\"-Wincompatible-pointer-types\\\"")
+        #define PYZFS_ZPOOL_GET_STATUS_CONST \
+          __builtin_types_compatible_p(__typeof__(zpool_get_status), \
+              zpool_status_t (*)(zpool_handle_t *, const char **))
         #else
-        #define PYZFS_DIAG_PUSH
-        #define PYZFS_DIAG_POP
-        #define PYZFS_DIAG_IGNORE_INCOMPAT
-        #endif
+        #define PYZFS_ZPOOL_GET_STATUS_CONST 1
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg) {
-          PYZFS_DIAG_PUSH;
-          PYZFS_DIAG_IGNORE_INCOMPAT;
+        #if PYZFS_ZPOOL_GET_STATUS_CONST
+          return zpool_get_status(zhp, msg);
+        #else
           return zpool_get_status(zhp, (char **)msg);
-          PYZFS_DIAG_POP;
+        #endif
         }
         """
         zpool_status_t pyzfs_zpool_get_status(libzfs.zpool_handle_t *, const char **)
