@@ -23,7 +23,11 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
+import glob
+import os
 import platform
+import shlex
+import subprocess
 import sys
 from collections import namedtuple
 from setuptools import setup
@@ -47,6 +51,86 @@ libraries = ['nvpair', 'zfs', 'zfs_core', 'uutil']
 if platform.system().lower() == 'freebsd':
     libraries.append('geom')
 
+extra_link_args = list(getattr(config, 'LDFLAGS', []))
+library_dirs = []
+
+
+def pkg_config_libs():
+    for pkg in ('libzfs', 'zfs'):
+        try:
+            subprocess.check_call(
+                ['pkg-config', '--exists', pkg],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except (OSError, subprocess.CalledProcessError):
+            continue
+
+        try:
+            output = subprocess.check_output(['pkg-config', '--libs', pkg], text=True).strip()
+        except (OSError, subprocess.CalledProcessError):
+            continue
+
+        libs = []
+        ldflags = []
+        for token in shlex.split(output):
+            if token.startswith('-l'):
+                libs.append(token[2:])
+            else:
+                ldflags.append(token)
+        if libs:
+            return libs, ldflags
+    return None
+
+
+def find_versioned_libs():
+    if platform.system().lower() != 'linux':
+        return None
+
+    search_dirs = [
+        '/lib',
+        '/lib64',
+        '/usr/lib',
+        '/usr/lib64',
+        '/lib/x86_64-linux-gnu',
+        '/usr/lib/x86_64-linux-gnu',
+    ]
+    patterns = {
+        'nvpair': ['libnvpair.so', 'libnvpair.so.*', 'libnvpair3linux.so*'],
+        'uutil': ['libuutil.so', 'libuutil.so.*', 'libuutil3linux.so*'],
+        'zfs': ['libzfs.so', 'libzfs.so.*', 'libzfs4linux.so*'],
+        'zfs_core': ['libzfs_core.so', 'libzfs_core.so.*', 'libzfs_core4linux.so*'],
+    }
+
+    resolved = {}
+    for key, pats in patterns.items():
+        found = None
+        for directory in search_dirs:
+            for pat in pats:
+                matches = sorted(glob.glob(os.path.join(directory, pat)))
+                if matches:
+                    found = matches[-1]
+                    break
+            if found:
+                break
+        if not found:
+            return None
+        resolved[key] = found
+    return resolved
+
+
+pkg = pkg_config_libs()
+if pkg:
+    libraries, extra_pkg_ldflags = pkg
+    extra_link_args.extend(extra_pkg_ldflags)
+else:
+    versioned = find_versioned_libs()
+    if versioned:
+        libraries = []
+        extra_link_args.extend(
+            [versioned['nvpair'], versioned['zfs'], versioned['zfs_core'], versioned['uutil']]
+        )
+
 
 setup(
     name='libzfs',
@@ -63,7 +147,8 @@ setup(
             libraries=libraries,
             extra_compile_args=config.CFLAGS + config.CPPFLAGS,
             cython_include_dirs=["./pxd"],
-            extra_link_args=config.LDFLAGS,
+            extra_link_args=extra_link_args,
+            library_dirs=library_dirs,
         )
     ]
 )
