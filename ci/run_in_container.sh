@@ -28,12 +28,17 @@ download_openzfs_headers() {
 
 ensure_zfs_header() {
   local header
-  for root in /usr/include/zfs /usr/include/libzfs /usr/src /usr/local/include /usr/include /tmp/openzfs-src/include; do
-    header=$(find "${root}" -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
-    if [[ -n "${header}" ]]; then
-      break
-    fi
-  done
+  if command -v rpm >/dev/null 2>&1; then
+    header=$(rpm -ql libzfs5-devel 2>/dev/null | grep -m1 '/sys/fs/zfs.h$' || true)
+  fi
+  if [[ -z "${header}" ]]; then
+    for root in /usr/include/zfs /usr/include/libzfs /usr/src /usr/local/include /usr/include /tmp/openzfs-src/include; do
+      header=$(find "${root}" -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
+      if [[ -n "${header}" ]]; then
+        break
+      fi
+    done
+  fi
   if [[ -z "${header}" ]]; then
     echo "sys/fs/zfs.h not found after installing headers." >&2
     return 1
@@ -48,6 +53,20 @@ ensure_zfs_header() {
       export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
     fi
   done
+
+  local os_linux
+  os_linux=$(find /usr/src /usr/local/include /usr/include \
+    -path "*/os/linux/sys/types.h" -print -quit 2>/dev/null || true)
+  if [[ -n "${os_linux}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${os_linux%/sys/types.h}"
+  fi
+  os_linux=$(find /usr/src /usr/local/include /usr/include \
+    -path "*/os/linux/spl/sys/types.h" -print -quit 2>/dev/null || true)
+  if [[ -n "${os_linux}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${os_linux%/sys/types.h}"
+  fi
+
+  export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
 add_pkg_config_cppflags() {
@@ -146,11 +165,13 @@ case "${DISTRO}" in
     install_ubuntu_libzfs
     ;;
   rocky-el8)
-    dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config
+    dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config \
+      libblkid-devel libuuid-devel libtirpc-devel zlib-devel
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
     ;;
   rocky-el9)
-    dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config
+    dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config \
+      libblkid-devel libuuid-devel libtirpc-devel zlib-devel
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
     ;;
   *)
