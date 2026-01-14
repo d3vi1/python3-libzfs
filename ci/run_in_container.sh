@@ -67,6 +67,11 @@ ensure_zfs_header() {
       export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
     fi
   done
+  for extra in /usr/local/include/spl /usr/include/spl; do
+    if [[ -d "${extra}" ]]; then
+      export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
+    fi
+  done
 
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
@@ -100,6 +105,15 @@ install_ubuntu_libzfs() {
       return
     fi
   done
+
+  if dpkg-query -W -f='${Status}' zfsutils-linux 2>/dev/null | grep -q "installed"; then
+    echo "==> dpkg -L zfsutils-linux"
+    dpkg -L zfsutils-linux || true
+  fi
+  if dpkg-query -W -f='${Status}' libzfs2linux 2>/dev/null | grep -q "installed"; then
+    echo "==> dpkg -L libzfs2linux"
+    dpkg -L libzfs2linux || true
+  fi
   local ver
   ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
   if [[ -z "${ver}" ]]; then
