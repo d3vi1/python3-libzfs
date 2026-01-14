@@ -1,5 +1,5 @@
 # encoding: utf-8
-# cython: language_level=3, c_string_type=unicode, c_string_encoding=default, warn.deprecated=False
+# cython: language_level=3, c_string_type=unicode, c_string_encoding=default
 
 include "config.pxi"
 include "zpool_status.pxi"
