@@ -173,6 +173,9 @@ if cython_src_root is not None:
 setup(
     name='libzfs',
     version='1.1',
+    url='https://github.com/d3vi1/python3-libzfs',
+    maintainer='python3-libzfs maintainers',
+    maintainer_email='openzfs-devel@lists.openzfs.org',
     cmdclass={'build_ext': build_ext},
     ext_modules=[
         Extension(
