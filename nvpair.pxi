@@ -30,20 +30,20 @@ cdef extern from *:
 
     #if defined(__GNUC__) || defined(__clang__)
     enum { PYZFS_NVPAIR_VALUE_STRING_CONST =
-      __builtin_types_compatible_p(__typeof__(nvpair_value_string),
+      __builtin_types_compatible_p(__typeof__(&nvpair_value_string),
           int (*)(const nvpair_t *, const char **)) ||
-      __builtin_types_compatible_p(__typeof__(nvpair_value_string),
+      __builtin_types_compatible_p(__typeof__(&nvpair_value_string),
           int (*)(nvpair_t *, const char **)) };
     enum { PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST =
-      __builtin_types_compatible_p(__typeof__(nvpair_value_string_array),
+      __builtin_types_compatible_p(__typeof__(&nvpair_value_string_array),
           int (*)(nvpair_t *, const char ***, uint_t *)) ||
-      __builtin_types_compatible_p(__typeof__(nvpair_value_string_array),
+      __builtin_types_compatible_p(__typeof__(&nvpair_value_string_array),
           int (*)(const nvpair_t *, const char ***, uint_t *)) };
     enum { PYZFS_NVLIST_ADD_STRING_ARRAY_CONST =
-      __builtin_types_compatible_p(__typeof__(nvlist_add_string_array),
+      __builtin_types_compatible_p(__typeof__(&nvlist_add_string_array),
           int (*)(nvlist_t *, const char *, const char * const *, uint_t)) };
     enum { PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST =
-      __builtin_types_compatible_p(__typeof__(nvlist_add_nvlist_array),
+      __builtin_types_compatible_p(__typeof__(&nvlist_add_nvlist_array),
           int (*)(nvlist_t *, const char *, const nvlist_t * const *, uint_t)) };
     #else
     enum { PYZFS_NVPAIR_VALUE_STRING_CONST = 1 };

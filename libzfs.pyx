@@ -50,7 +50,7 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
 
         #if defined(__GNUC__) || defined(__clang__)
         enum { PYZFS_ZPOOL_GET_STATUS_CONST =
-          __builtin_types_compatible_p(__typeof__(zpool_get_status),
+          __builtin_types_compatible_p(__typeof__(&zpool_get_status),
               zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *)) };
         #else
         enum { PYZFS_ZPOOL_GET_STATUS_CONST = 1 };
@@ -80,7 +80,7 @@ ELSE:
 
         #if defined(__GNUC__) || defined(__clang__)
         enum { PYZFS_ZPOOL_GET_STATUS_CONST =
-          __builtin_types_compatible_p(__typeof__(zpool_get_status),
+          __builtin_types_compatible_p(__typeof__(&zpool_get_status),
               zpool_status_t (*)(zpool_handle_t *, const char **)) };
         #else
         enum { PYZFS_ZPOOL_GET_STATUS_CONST = 1 };

@@ -77,6 +77,7 @@ ensure_zfs_header() {
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <sys/mount.h>
 #ifndef uchar_t
 typedef unsigned char uchar_t;
 #endif
@@ -102,6 +103,13 @@ typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
 #endif
 #ifndef HAVE_HRTIME_T
 typedef long long hrtime_t;
+#endif
+#ifndef MS_FORCE
+#ifdef MNT_FORCE
+#define MS_FORCE MNT_FORCE
+#else
+#define MS_FORCE 0
+#endif
 #endif
 EOF
     export CPPFLAGS="${CPPFLAGS:-} -include /tmp/zfs-compat/zfs_compat.h"
