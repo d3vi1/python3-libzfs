@@ -140,7 +140,7 @@ else:
         )
 
 extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
-define_macros = [('CYTHON_FALLTHROUGH', '((void)0)')]
+define_macros = [('CYTHON_FALLTHROUGH', 'do { } while (0)')]
 
 
 def _parse_cython_version():
@@ -173,7 +173,7 @@ def _prepare_cython_sources():
 
     shutil.copytree(root / 'pxd', temp_root / 'pxd', dirs_exist_ok=True)
 
-    pattern = re.compile(r'^(\\s*)(IF|ELIF|ELSE)\\b', re.M)
+    pattern = re.compile(r'^(\s*)(IF|ELIF|ELSE)\b', re.M)
     for path in temp_root.rglob('*'):
         if path.suffix not in {'.pyx', '.pxd', '.pxi'}:
             continue

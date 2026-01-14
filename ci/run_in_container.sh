@@ -311,20 +311,20 @@ case "${STEP}" in
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt_install \
-          build-essential pkg-config python3 python3-dev python3-setuptools python3-wheel cython3 zfsutils-linux
+          build-essential pkg-config python3 python3-dev python3-build python3-setuptools python3-wheel cython3 zfsutils-linux
         install_ubuntu_libzfs
         ;;
       rocky-el8)
         dnf -y install dnf-plugins-core epel-release
         dnf config-manager --set-enabled powertools || true
-        dnf -y install gcc make python3 python3-devel python3-setuptools python3-wheel pkgconf-pkg-config python3-Cython \
+        dnf -y install gcc make python3 python3-devel python3-build python3-setuptools python3-wheel pkgconf-pkg-config python3-Cython \
           libblkid-devel libuuid-devel libtirpc-devel zlib-devel
         install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
         ;;
       rocky-el9)
         dnf -y install dnf-plugins-core epel-release
         dnf config-manager --set-enabled crb || true
-        dnf -y install gcc make python3 python3-devel python3-setuptools python3-wheel pkgconf-pkg-config python3-Cython \
+        dnf -y install gcc make python3 python3-devel python3-build python3-setuptools python3-wheel pkgconf-pkg-config python3-Cython \
           libblkid-devel libuuid-devel libtirpc-devel zlib-devel
         install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
         ;;
@@ -364,6 +364,6 @@ PY
     ;;
   package)
     echo "==> Package"
-    python3 setup.py sdist bdist_wheel
+    python3 -m build --no-isolation --sdist --wheel
     ;;
 esac
