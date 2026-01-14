@@ -618,7 +618,7 @@ cdef class ZFS(object):
             return zfs.ZPROP_CONT
 
     @staticmethod
-    cdef int __iterate_pools(libzfs.zpool_handle_t *handle, void *arg) noexcept nogil:
+    cdef int __iterate_pools(libzfs.zpool_handle_t *handle, void *arg) nogil:
         cdef iter_state *iter
         cdef iter_state new
 
@@ -985,13 +985,23 @@ cdef class ZFS(object):
 
             # Mount all datasets
             libzfs.zfs_foreach_mountpoint(
-                self.handle, cb.cb_handles, cb.cb_used, ZFS.mount_dataset, <void*>mount_data.handle, True
+                self.handle,
+                cb.cb_handles,
+                cb.cb_used,
+                cython.cast(libzfs.zfs_iter_f, ZFS.mount_dataset),
+                <void*>mount_data.handle,
+                True
             )
 
             # Share all datasets
             if enable_shares:
                 libzfs.zfs_foreach_mountpoint(
-                    self.handle, cb.cb_handles, cb.cb_used, ZFS.share_one_dataset, <void*>mount_results, False
+                    self.handle,
+                    cb.cb_handles,
+                    cb.cb_used,
+                    cython.cast(libzfs.zfs_iter_f, ZFS.share_one_dataset),
+                    <void*>mount_results,
+                    False
                 )
                 IF HAVE_ZFS_SHARE == 2:
                     with gil:
@@ -3611,7 +3621,7 @@ cdef class ZFSObject(object):
 cdef class ZFSResource(ZFSObject):
 
     @staticmethod
-    cdef int __iterate(libzfs.zfs_handle_t* handle, void *arg) noexcept nogil:
+    cdef int __iterate(libzfs.zfs_handle_t* handle, void *arg) nogil:
         cdef iter_state *iter
         cdef iter_state new
 
