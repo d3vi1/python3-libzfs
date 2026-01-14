@@ -1262,8 +1262,10 @@ cdef class ZFS(object):
                 result = libzfs.zpool_search_import(self.handle, &iargs, &libzfs.libzfs_config_ops)
             ELIF HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
                 result = libzfs.zpool_search_import(&lpch, &iargs)
-            ELSE:
+            ELIF HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
                 result = libzfs.zpool_search_import(self.handle, &iargs)
+            ELSE:
+                result = libzfs.zpool_find_import(self.handle, iargs.paths, iargs.path)
             IF HAVE_THREAD_INIT_FINI:
                 thread_fini()
 
@@ -4504,10 +4506,12 @@ def read_label(device):
         os.close(fd)
         raise OSError(errno.EINVAL, 'Not a character device')
 
-    IF HAVE_ZPOOL_READ_LABEL_PARAMS == 3:
-        ret = libzfs.zpool_read_label(fd, &handle, NULL)
-    ELSE:
-        ret = libzfs.zpool_read_label(fd, &handle)
+        IF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 3:
+            ret = libzfs.zpool_read_label(fd, &handle, NULL)
+        ELIF (HAVE_ZPOOL_READ_LABEL_LIBZFS or HAVE_ZPOOL_READ_LABEL_LIBZUTIL) and HAVE_ZPOOL_READ_LABEL_PARAMS == 2:
+            ret = libzfs.zpool_read_label(fd, &handle)
+        ELSE:
+            raise NotImplementedError("zpool_read_label not available in this libzfs build")
 
     if ret != 0:
         os.close(fd)
