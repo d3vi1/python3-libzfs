@@ -4005,7 +4005,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL=1
  HAVE_ZPOOL_SEARCH_IMPORT_PARAMS=2
@@ -4016,8 +4016,7 @@ else $as_nop
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: NOT FOUND" >&5
 printf "%s\n" "$as_me: NOT FOUND" >&6;}
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -4122,7 +4121,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_ADD_PARAMS=3
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 params" >&5
@@ -4133,8 +4132,7 @@ else $as_nop
 printf "%s\n" "$as_me: 2 params" >&6;}
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 
 
@@ -4154,7 +4152,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZFS_FOREACH_MOUNTPOINT=1
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: OK" >&5
@@ -4165,8 +4163,7 @@ else $as_nop
 printf "%s\n" "$as_me: NOT FOUND" >&6;}
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zfs_foreach_mountpoint signature" >&5
@@ -4188,7 +4185,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZFS_FOREACH_MOUNTPOINT_UINT=1
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: uint_t" >&5
@@ -4199,8 +4196,7 @@ else $as_nop
 printf "%s\n" "$as_me: boolean_t" >&6;}
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 
 
@@ -4731,7 +4727,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_ENABLE_DATASETS_PARAMS=4
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 4 params" >&5
@@ -4742,8 +4738,7 @@ else $as_nop
 printf "%s\n" "$as_me: 3 params" >&6;}
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_explain_recover parameters" >&5

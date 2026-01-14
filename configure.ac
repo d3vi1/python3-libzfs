@@ -337,7 +337,7 @@ dnl Checking parameters of zpool_add
 
 AC_MSG_NOTICE([Checking zpool_add parameters])
 
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			zpool_add(NULL, NULL, B_FALSE);
@@ -605,7 +605,7 @@ dnl Checking parameters of zpool_enable_datasets
 
 AC_MSG_NOTICE([Checking zpool_enable_datasets parameters])
 
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			zpool_enable_datasets(NULL, NULL, 0, 0);
