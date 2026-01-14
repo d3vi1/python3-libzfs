@@ -52,26 +52,6 @@ ensure_zfs_header() {
     return 1
   fi
 
-  if command -v rpm >/dev/null 2>&1; then
-    local header_pkg
-    header_pkg=$(rpm -qf "${header}" 2>/dev/null || true)
-    if [[ -n "${header_pkg}" ]]; then
-      echo "==> rpm -qf ${header}"
-      echo "${header_pkg}"
-      echo "==> rpm -ql ${header_pkg}"
-      rpm -ql "${header_pkg}" || true
-    fi
-  elif command -v dpkg-query >/dev/null 2>&1; then
-    local header_pkg
-    header_pkg=$(dpkg-query -S "${header}" 2>/dev/null | head -n 1 | cut -d: -f1 || true)
-    if [[ -n "${header_pkg}" ]]; then
-      echo "==> dpkg-query -S ${header}"
-      dpkg-query -S "${header}" || true
-      echo "==> dpkg -L ${header_pkg}"
-      dpkg -L "${header_pkg}" || true
-    fi
-  fi
-
   local use_openzfs_primary=0
   if [[ "${header}" == /tmp/openzfs-src/* ]]; then
     use_openzfs_primary=1
@@ -104,25 +84,6 @@ ensure_zfs_header() {
   libzfs_header=$(find /usr/local/include /usr/include /usr/include/libzfs /usr/src /tmp/openzfs-src/include \
     -path "*/libzfs.h" -print -quit 2>/dev/null || true)
   if [[ -n "${libzfs_header}" ]]; then
-    if command -v rpm >/dev/null 2>&1; then
-      local libzfs_pkg
-      libzfs_pkg=$(rpm -qf "${libzfs_header}" 2>/dev/null || true)
-      if [[ -n "${libzfs_pkg}" ]]; then
-        echo "==> rpm -qf ${libzfs_header}"
-        echo "${libzfs_pkg}"
-        echo "==> rpm -ql ${libzfs_pkg}"
-        rpm -ql "${libzfs_pkg}" || true
-      fi
-    elif command -v dpkg-query >/dev/null 2>&1; then
-      local libzfs_pkg
-      libzfs_pkg=$(dpkg-query -S "${libzfs_header}" 2>/dev/null | head -n 1 | cut -d: -f1 || true)
-      if [[ -n "${libzfs_pkg}" ]]; then
-        echo "==> dpkg-query -S ${libzfs_header}"
-        dpkg-query -S "${libzfs_header}" || true
-        echo "==> dpkg -L ${libzfs_pkg}"
-        dpkg -L "${libzfs_pkg}" || true
-      fi
-    fi
     if [[ "${libzfs_header}" == /tmp/openzfs-src/* && ${use_openzfs_primary} -eq 1 ]]; then
       export CPPFLAGS="${CPPFLAGS:-} -idirafter ${libzfs_header%/libzfs.h}"
     else
@@ -203,26 +164,10 @@ install_ubuntu_libzfs() {
   local pkg
   for pkg in libzfs-dev libzfs4linux-dev libzfs2linux-dev; do
     if apt-get install -y --no-install-recommends "${pkg}"; then
-      echo "==> dpkg -L ${pkg}"
-      dpkg -L "${pkg}" || true
       return
     fi
   done
 
-  if dpkg-query -W -f='${Status}' zfsutils-linux 2>/dev/null | grep -q "installed"; then
-    echo "==> dpkg -L zfsutils-linux"
-    dpkg -L zfsutils-linux || true
-  fi
-  if dpkg-query -W -f='${Status}' libzfs2linux 2>/dev/null | grep -q "installed"; then
-    echo "==> dpkg -L libzfs2linux"
-    dpkg -L libzfs2linux || true
-  fi
-  for pkg in libzfs4linux libzpool5linux libnvpair3linux libuutil3linux; do
-    if dpkg-query -W -f='${Status}' "${pkg}" 2>/dev/null | grep -q "installed"; then
-      echo "==> dpkg -L ${pkg}"
-      dpkg -L "${pkg}" || true
-    fi
-  done
   local ver
   ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
   if [[ -z "${ver}" ]]; then
@@ -247,19 +192,6 @@ install_rocky_libzfs() {
     if ! dnf -y --enablerepo=zfs install libzfs5 libzfs5-devel; then
       dnf -y --enablerepo=zfs install libzfs libzfs-devel
     fi
-  fi
-
-  if rpm -q zfs-devel >/dev/null 2>&1; then
-    echo "==> rpm -ql zfs-devel"
-    rpm -ql zfs-devel || true
-  fi
-  if rpm -q libzfs5-devel >/dev/null 2>&1; then
-    echo "==> rpm -ql libzfs5-devel"
-    rpm -ql libzfs5-devel || true
-  fi
-  if rpm -q libzfs-devel >/dev/null 2>&1; then
-    echo "==> rpm -ql libzfs-devel"
-    rpm -ql libzfs-devel || true
   fi
 
   if ! rpm -q libzfs5-devel >/dev/null 2>&1 \
