@@ -970,11 +970,10 @@ cdef class ZFS(object):
             cdef const char *c_name
             cdef libzfs.get_all_cb_t cb
 
-            with gil:
-                mount_data = NVList(otherdict={})
-                mount_results = {'failed_mount': [], 'failed_share': []}
-                c_name = name
-                cb = libzfs.get_all_cb_t(cb_alloc=0, cb_used=0, cb_handles=NULL)
+            mount_data = NVList(otherdict={})
+            mount_results = {'failed_mount': [], 'failed_share': []}
+            c_name = name
+            cb = libzfs.get_all_cb_t(cb_alloc=0, cb_used=0, cb_handles=NULL)
 
             handle = libzfs.zfs_open(self.handle, c_name, zfs.ZFS_TYPE_FILESYSTEM)
             if handle == NULL:
@@ -1015,17 +1014,16 @@ cdef class ZFS(object):
                 libzfs.zfs_close(cb.cb_handles[i])
             free(cb.cb_handles)
 
-            with gil:
-                mount_results['failed_mount'] = mount_data.keys()
-                if mount_results['failed_mount'] or mount_results['failed_share']:
-                    error_str = ''
-                    if mount_results['failed_mount']:
-                        error_str += f'Failed to mount "{",".join(mount_results["failed_mount"])}" dataset(s)'
-                    if mount_results['failed_share']:
-                        error_str += (
-                            '\n' if error_str else ''
-                        ) + f'Failed to share "{",".join(mount_results["failed_share"])}" dataset(s)'
-                    raise ZFSException(Error.MOUNTFAILED, error_str)
+            mount_results['failed_mount'] = mount_data.keys()
+            if mount_results['failed_mount'] or mount_results['failed_share']:
+                error_str = ''
+                if mount_results['failed_mount']:
+                    error_str += f'Failed to mount "{",".join(mount_results["failed_mount"])}" dataset(s)'
+                if mount_results['failed_share']:
+                    error_str += (
+                        '\n' if error_str else ''
+                    ) + f'Failed to share "{",".join(mount_results["failed_share"])}" dataset(s)'
+                raise ZFSException(Error.MOUNTFAILED, error_str)
 
     @staticmethod
     cdef int __snapshot_details(libzfs.zfs_handle_t *handle, void *arg) nogil:
