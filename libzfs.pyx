@@ -3540,7 +3540,7 @@ cdef class ZFSResource(ZFSObject):
                 raise MemoryError()
 
             iter.alloc = 128
-            ZFS.__iterate_dependents(self.handle, 0, recursion, self.__iterate, <void*>&iter)
+            ZFS.__iterate_dependents(self.handle, 0, recursion, ZFSResource.__iterate, <void*>&iter)
 
         try:
             for h in range(0, iter.length):
@@ -3741,7 +3741,7 @@ cdef class ZFSDataset(ZFSResource):
                 raise MemoryError()
 
             iter.alloc = 128
-            ZFS.__iterate_filesystems(self.handle, 0, self.__iterate, <void*>&iter)
+            ZFS.__iterate_filesystems(self.handle, 0, ZFSResource.__iterate, <void*>&iter)
 
             try:
                 for h in range(0, iter.length):
@@ -3776,7 +3776,7 @@ cdef class ZFSDataset(ZFSResource):
                 raise MemoryError()
 
             iter.alloc = 128
-            libzfs.zfs_iter_snapshots(self.handle, False, self.__iterate, <void*>&iter, 0, 0)
+            libzfs.zfs_iter_snapshots(self.handle, False, ZFSResource.__iterate, <void*>&iter, 0, 0)
 
             try:
                 for h in range(0, iter.length):
@@ -3808,7 +3808,7 @@ cdef class ZFSDataset(ZFSResource):
                 raise MemoryError()
 
             iter.alloc = 128
-            ZFS.__iterate_bookmarks(self.handle, 0, self.__iterate, <void *>&iter)
+            ZFS.__iterate_bookmarks(self.handle, 0, ZFSResource.__iterate, <void *>&iter)
 
             try:
                 for b in range(0, iter.length):
