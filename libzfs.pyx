@@ -49,19 +49,19 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
         #endif
 
         #if defined(__GNUC__) || defined(__clang__)
-        enum { PYZFS_ZPOOL_GET_STATUS_CONST =
+        enum { PYZFS_ZPOOL_GET_STATUS_MUT =
           __builtin_types_compatible_p(__typeof__(&zpool_get_status),
-              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *)) };
+              zpool_status_t (*)(zpool_handle_t *, char **, zpool_errata_t *)) };
         #else
-        enum { PYZFS_ZPOOL_GET_STATUS_CONST = 1 };
+        enum { PYZFS_ZPOOL_GET_STATUS_MUT = 0 };
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
         #if defined(__GNUC__) || defined(__clang__)
-          return __builtin_choose_expr(PYZFS_ZPOOL_GET_STATUS_CONST,
-              zpool_get_status(zhp, msg, err),
-              zpool_get_status(zhp, (char **)msg, err));
+          return __builtin_choose_expr(PYZFS_ZPOOL_GET_STATUS_MUT,
+              zpool_get_status(zhp, (char **)msg, err),
+              zpool_get_status(zhp, msg, err));
         #else
           return zpool_get_status(zhp, msg, err);
         #endif
@@ -79,19 +79,19 @@ ELSE:
         #endif
 
         #if defined(__GNUC__) || defined(__clang__)
-        enum { PYZFS_ZPOOL_GET_STATUS_CONST =
+        enum { PYZFS_ZPOOL_GET_STATUS_MUT =
           __builtin_types_compatible_p(__typeof__(&zpool_get_status),
-              zpool_status_t (*)(zpool_handle_t *, const char **)) };
+              zpool_status_t (*)(zpool_handle_t *, char **)) };
         #else
-        enum { PYZFS_ZPOOL_GET_STATUS_CONST = 1 };
+        enum { PYZFS_ZPOOL_GET_STATUS_MUT = 0 };
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg) {
         #if defined(__GNUC__) || defined(__clang__)
-          return __builtin_choose_expr(PYZFS_ZPOOL_GET_STATUS_CONST,
-              zpool_get_status(zhp, msg),
-              zpool_get_status(zhp, (char **)msg));
+          return __builtin_choose_expr(PYZFS_ZPOOL_GET_STATUS_MUT,
+              zpool_get_status(zhp, (char **)msg),
+              zpool_get_status(zhp, msg));
         #else
           return zpool_get_status(zhp, msg);
         #endif
