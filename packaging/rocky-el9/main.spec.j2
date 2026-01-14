@@ -6,7 +6,11 @@ License: {{ license }}
 URL: {{ git_url }}
 Source0: %{name}-%{version}.tar.gz
 BuildArch: {{ architecture.rocky }}
-Requires: {{ dependencies.rocky_common | join(',') }}
+{% set deps = dependencies.rocky_common if dependencies.rocky_common is defined else [] %}
+{% if dependencies.rocky is defined and dependencies.rocky[os_name] is defined %}
+{% set deps = dependencies.rocky[os_name] %}
+{% endif %}
+Requires: {{ deps | join(',') }}
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
