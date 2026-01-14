@@ -1004,10 +1004,9 @@ cdef class ZFS(object):
                     False
                 )
                 IF HAVE_ZFS_SHARE == 2:
-                    with gil:
-                        if not mount_results['failed_share']:
-                            with nogil:
-                                libzfs.zfs_commit_shares(NULL)
+                    if not mount_results['failed_share']:
+                        with nogil:
+                            libzfs.zfs_commit_shares(NULL)
 
             # Free all handles
             for i in range(cb.cb_used):
