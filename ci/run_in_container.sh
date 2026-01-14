@@ -68,18 +68,6 @@ ensure_zfs_header() {
     fi
   done
 
-  local os_linux
-  os_linux=$(find /usr/src /usr/local/include /usr/include \
-    -path "*/os/linux/sys/types.h" -print -quit 2>/dev/null || true)
-  if [[ -n "${os_linux}" ]]; then
-    export CPPFLAGS="${CPPFLAGS:-} -I${os_linux%/sys/types.h}"
-  fi
-  os_linux=$(find /usr/src /usr/local/include /usr/include \
-    -path "*/os/linux/spl/sys/types.h" -print -quit 2>/dev/null || true)
-  if [[ -n "${os_linux}" ]]; then
-    export CPPFLAGS="${CPPFLAGS:-} -I${os_linux%/sys/types.h}"
-  fi
-
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
