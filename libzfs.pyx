@@ -3805,14 +3805,13 @@ cdef class ZFSDataset(ZFSResource):
             cdef ZFSBookmark bookmark
             cdef iter_state iter
 
-            with nogil:
-                iter.length = 0
-                iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
-                if not iter.array:
-                    raise MemoryError()
+            iter.length = 0
+            iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
+            if not iter.array:
+                raise MemoryError()
 
-                iter.alloc = 128
-                ZFS.__iterate_bookmarks(self.handle, 0, self.__iterate, <void *>&iter)
+            iter.alloc = 128
+            ZFS.__iterate_bookmarks(self.handle, 0, self.__iterate, <void *>&iter)
 
             try:
                 for b in range(0, iter.length):
@@ -3823,12 +3822,11 @@ cdef class ZFSDataset(ZFSResource):
                     bookmark.pool = self.pool
                     yield bookmark
             finally:
-                with nogil:
-                    for h in range(0, iter.length):
-                        if iter.array[h]:
-                            libzfs.zfs_close(<libzfs.zfs_handle_t*>iter.array[h])
+                for h in range(0, iter.length):
+                    if iter.array[h]:
+                        libzfs.zfs_close(<libzfs.zfs_handle_t*>iter.array[h])
 
-                    free(iter.array)
+                free(iter.array)
 
     property snapshots_recursive:
         def __get__(self):
