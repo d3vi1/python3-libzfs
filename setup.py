@@ -67,7 +67,10 @@ def pkg_config_libs():
             continue
 
         try:
-            output = subprocess.check_output(['pkg-config', '--libs', pkg], text=True).strip()
+            output = subprocess.check_output(
+                ['pkg-config', '--libs', pkg],
+                universal_newlines=True,
+            ).strip()
         except (OSError, subprocess.CalledProcessError):
             continue
 

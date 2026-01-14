@@ -727,6 +727,7 @@ ZPOOL_STATUS_COMPATIBILITY_ERR
 HAVE_ZPOOL_STATUS_COMPATIBILITY_ERR
 ZPOOL_STATUS_REBUILD_SCRUB
 HAVE_ZPOOL_STATUS_REBUILD_SCRUB
+HAVE_ZPOOL_STATUS_NON_NATIVE_ASHIFT
 ZPOOL_STATUS_REBUILDING
 HAVE_ZPOOL_STATUS_REBUILDING
 ZPOOL_STATUS_ERRATA
@@ -5244,6 +5245,44 @@ else $as_nop
 		HAVE_ZPOOL_STATUS_REBUILD_SCRUB=0
 
 		ZPOOL_STATUS_REBUILD_SCRUB="# ZPOOL_STATUS_REBUILD_SCRUB not defined"
+
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: NOT FOUND" >&5
+printf "%s\n" "$as_me: NOT FOUND" >&6;}
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking ZPOOL_STATUS_NON_NATIVE_ASHIFT presence" >&5
+printf "%s\n" "$as_me: Checking ZPOOL_STATUS_NON_NATIVE_ASHIFT presence" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_status_t status = ZPOOL_STATUS_NON_NATIVE_ASHIFT /* ; */
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+		HAVE_ZPOOL_STATUS_NON_NATIVE_ASHIFT=1
+
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: OK" >&5
+printf "%s\n" "$as_me: OK" >&6;}
+
+else $as_nop
+
+		HAVE_ZPOOL_STATUS_NON_NATIVE_ASHIFT=0
 
 		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: NOT FOUND" >&5
 printf "%s\n" "$as_me: NOT FOUND" >&6;}
