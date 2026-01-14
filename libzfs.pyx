@@ -1343,7 +1343,10 @@ cdef class ZFS(object):
             self.zpool_enable_datasets(newname, enable_shares)
         ELSE:
             with nogil:
-                ret = libzfs.zpool_enable_datasets(newpool.handle, NULL, 0)
+                IF HAVE_ZPOOL_ENABLE_DATASETS_PARAMS == 4:
+                    ret = libzfs.zpool_enable_datasets(newpool.handle, NULL, 0, 0)
+                ELSE:
+                    ret = libzfs.zpool_enable_datasets(newpool.handle, NULL, 0)
 
         self.write_history(
             'zpool import', str(pool.guid), '-l' if load_keys else '', newpool.name
@@ -2842,7 +2845,10 @@ cdef class ZFSPool(object):
 
     property status_code:
         def __get__(self):
-            cdef char* msg_id
+            IF HAVE_ZPOOL_GET_STATUS_CONST:
+                cdef const char* msg_id
+            ELSE:
+                cdef char* msg_id
             if self.handle != NULL:
                 IF HAVE_ZPOOL_GET_STATUS == 3:
                     return PoolStatus(libzfs.zpool_get_status(self.handle, &msg_id, NULL))
@@ -3132,7 +3138,10 @@ cdef class ZFSPool(object):
         cdef boolean_t ashift = check_ashift
 
         with nogil:
-            ret = libzfs.zpool_add(self.handle, vd.nvlist.handle, ashift)
+            IF HAVE_ZPOOL_ADD_PARAMS == 3:
+                ret = libzfs.zpool_add(self.handle, vd.nvlist.handle, ashift)
+            ELSE:
+                ret = libzfs.zpool_add(self.handle, vd.nvlist.handle)
 
         if ret != 0:
             raise self.root.get_error()
