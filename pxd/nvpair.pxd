@@ -103,7 +103,7 @@ IF HAVE_NVPAIR_IN_SYS:
 		int nvlist_add_int64_array(nvlist_t *, const char *, int64_t *, uint_t)
 		int nvlist_add_uint64_array(nvlist_t *, const char *, uint64_t *, uint_t)
 		int nvlist_add_string_array(nvlist_t *, const char *, const char * const *, uint_t)
-		int nvlist_add_nvlist_array(nvlist_t *, const char *, nvlist_t * const *, uint_t)
+		int nvlist_add_nvlist_array(nvlist_t *, const char *, const nvlist_t * const *, uint_t)
 		int nvlist_add_hrtime(nvlist_t *, const char *, hrtime_t)
 		int nvlist_add_double(nvlist_t *, const char *, double)
 
@@ -215,7 +215,7 @@ IF HAVE_NVPAIR_IN_SYS:
 		void fnvlist_add_int64_array(nvlist_t *, const char *, int64_t *, uint_t)
 		void fnvlist_add_uint64_array(nvlist_t *, const char *, uint64_t *, uint_t)
 		void fnvlist_add_string_array(nvlist_t *, const char *, const char * const *, uint_t)
-		void fnvlist_add_nvlist_array(nvlist_t *, const char *, nvlist_t * const *, uint_t)
+		void fnvlist_add_nvlist_array(nvlist_t *, const char *, const nvlist_t * const *, uint_t)
 
 		void fnvlist_remove(nvlist_t *, const char *)
 		void fnvlist_remove_nvpair(nvlist_t *, nvpair_t *)
@@ -347,7 +347,7 @@ ELSE:
 		int nvlist_add_int64_array(nvlist_t *, const char *, int64_t *, uint_t)
 		int nvlist_add_uint64_array(nvlist_t *, const char *, uint64_t *, uint_t)
 		int nvlist_add_string_array(nvlist_t *, const char *, const char * const *, uint_t)
-		int nvlist_add_nvlist_array(nvlist_t *, const char *, nvlist_t * const *, uint_t)
+		int nvlist_add_nvlist_array(nvlist_t *, const char *, const nvlist_t * const *, uint_t)
 		int nvlist_add_hrtime(nvlist_t *, const char *, hrtime_t)
 		int nvlist_add_double(nvlist_t *, const char *, double)
 
@@ -459,7 +459,7 @@ ELSE:
 		void fnvlist_add_int64_array(nvlist_t *, const char *, int64_t *, uint_t)
 		void fnvlist_add_uint64_array(nvlist_t *, const char *, uint64_t *, uint_t)
 		void fnvlist_add_string_array(nvlist_t *, const char *, const char * const *, uint_t)
-		void fnvlist_add_nvlist_array(nvlist_t *, const char *, nvlist_t * const *, uint_t)
+		void fnvlist_add_nvlist_array(nvlist_t *, const char *, const nvlist_t * const *, uint_t)
 
 		void fnvlist_remove(nvlist_t *, const char *)
 		void fnvlist_remove_nvpair(nvlist_t *, nvpair_t *)

@@ -347,7 +347,7 @@ cdef class NVList(object):
                     (<uintptr_t*>carray)[idx] = <uintptr_t>cnvlist.handle
 
                 nvpair.nvlist_add_nvlist_array(
-                    self.handle, key, <nvpair.nvlist_t * const *>carray, len(value)
+                    self.handle, key, <const nvpair.nvlist_t * const *>carray, len(value)
                 )
 
             if carray != NULL:
