@@ -67,8 +67,14 @@ jobs:
         run: |
           sudo chown -R "$USER:$USER" .cache || true
           sudo chmod -R u+rwX .cache || true
-          sudo chown -R "$USER:$USER" dist build || true
-          sudo chmod -R u+rwX dist build || true
+          if [ -d dist ]; then
+            sudo chown -R "$USER:$USER" dist || true
+            sudo chmod -R u+rwX dist || true
+          fi
+          if [ -d build ]; then
+            sudo chown -R "$USER:$USER" build || true
+            sudo chmod -R u+rwX build || true
+          fi
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -178,7 +178,7 @@ def _prepare_cython_sources():
         if path.suffix not in {'.pyx', '.pxd', '.pxi'}:
             continue
         text = path.read_text()
-        new = pattern.sub(lambda m: f\"{m.group(1)}{m.group(2).lower()}\", text)
+        new = pattern.sub(lambda m: f"{m.group(1)}{m.group(2).lower()}", text)
         if new != text:
             path.write_text(new)
 
