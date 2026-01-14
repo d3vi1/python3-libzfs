@@ -13,11 +13,11 @@ apt_has_pkg() {
 }
 
 ensure_python_build() {
-  python3 - <<'PY' >/dev/null 2>&1
+  if python3 - <<'PY' >/dev/null 2>&1
 import importlib.util
 raise SystemExit(0 if importlib.util.find_spec("build.__main__") else 1)
 PY
-  if [[ $? -eq 0 ]]; then
+  then
     return 0
   fi
 
@@ -31,11 +31,11 @@ PY
     fi
   fi
 
-  python3 - <<'PY' >/dev/null 2>&1
+  if python3 - <<'PY' >/dev/null 2>&1
 import importlib.util
 raise SystemExit(0 if importlib.util.find_spec("build.__main__") else 1)
 PY
-  if [[ $? -eq 0 ]]; then
+  then
     return 0
   fi
 
@@ -413,11 +413,11 @@ PY
     ;;
   package)
     echo "==> Package"
-    python3 - <<'PY' >/dev/null 2>&1
+    if python3 - <<'PY' >/dev/null 2>&1
 import sys
 raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
 PY
-    if [[ $? -eq 0 ]]; then
+    then
       ensure_python_build
       if python3 -m build --no-isolation --sdist --wheel; then
         exit 0
