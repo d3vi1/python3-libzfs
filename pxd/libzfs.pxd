@@ -264,10 +264,16 @@ cdef extern from "libzfs.h" nogil:
         ELSE:
             extern zpool_status_t zpool_get_status(zpool_handle_t *, char **)
 
-    IF HAVE_ZPOOL_IMPORT_STATUS_CONST:
-        extern zpool_status_t zpool_import_status(nvpair.nvlist_t *, const char **)
+    IF HAVE_ZPOOL_IMPORT_STATUS_PARAMS == 3:
+        IF HAVE_ZPOOL_IMPORT_STATUS_CONST:
+            extern zpool_status_t zpool_import_status(nvpair.nvlist_t *, const char **, zfs.zpool_errata_t *)
+        ELSE:
+            extern zpool_status_t zpool_import_status(nvpair.nvlist_t *, char **, zfs.zpool_errata_t *)
     ELSE:
-        extern zpool_status_t zpool_import_status(nvpair.nvlist_t *, char **)
+        IF HAVE_ZPOOL_IMPORT_STATUS_CONST:
+            extern zpool_status_t zpool_import_status(nvpair.nvlist_t *, const char **)
+        ELSE:
+            extern zpool_status_t zpool_import_status(nvpair.nvlist_t *, char **)
     extern void zpool_dump_ddt(const zfs.ddt_stat_t *dds, const zfs.ddt_histogram_t *ddh)
     extern nvpair.nvlist_t *zpool_get_config(zpool_handle_t *, nvpair.nvlist_t **)
     extern nvpair.nvlist_t *zpool_get_features(zpool_handle_t *)
