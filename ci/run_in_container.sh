@@ -4,8 +4,13 @@ set -euo pipefail
 DISTRO=${1:?distro name required}
 
 install_common() {
-  python3 -m pip install --no-cache-dir --upgrade pip
-  python3 -m pip install --no-cache-dir cython
+  local pip_args=(--no-cache-dir)
+  if python3 -m pip --help 2>/dev/null | grep -q -- '--break-system-packages'; then
+    pip_args+=(--break-system-packages)
+  fi
+
+  python3 -m pip install "${pip_args[@]}" --upgrade pip
+  python3 -m pip install "${pip_args[@]}" cython
 }
 
 download_openzfs_headers() {
@@ -91,7 +96,7 @@ case "${DISTRO}" in
     ;;
   rocky-el8)
     dnf -y install gcc make python3 python3-devel python3-pip
-    install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-1.el8.noarch.rpm
+    install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
     ;;
   rocky-el9)
     dnf -y install gcc make python3 python3-devel python3-pip
