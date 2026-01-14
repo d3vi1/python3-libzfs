@@ -3735,14 +3735,13 @@ cdef class ZFSDataset(ZFSResource):
             cdef iter_state iter
 
             datasets = []
-            with nogil:
-                iter.length = 0
-                iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
-                if not iter.array:
-                    raise MemoryError()
+            iter.length = 0
+            iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
+            if not iter.array:
+                raise MemoryError()
 
-                iter.alloc = 128
-                ZFS.__iterate_filesystems(self.handle, 0, self.__iterate, <void*>&iter)
+            iter.alloc = 128
+            ZFS.__iterate_filesystems(self.handle, 0, self.__iterate, <void*>&iter)
 
             try:
                 for h in range(0, iter.length):
@@ -3753,12 +3752,11 @@ cdef class ZFSDataset(ZFSResource):
                     dataset.pool = self.pool
                     yield dataset
             finally:
-                with nogil:
-                    for h in range(0, iter.length):
-                        if iter.array[h]:
-                            libzfs.zfs_close(<libzfs.zfs_handle_t*>iter.array[h])
+                for h in range(0, iter.length):
+                    if iter.array[h]:
+                        libzfs.zfs_close(<libzfs.zfs_handle_t*>iter.array[h])
 
-                    free(iter.array)
+                free(iter.array)
 
     property children_recursive:
         def __get__(self):
@@ -3772,14 +3770,13 @@ cdef class ZFSDataset(ZFSResource):
             cdef ZFSSnapshot snapshot
             cdef iter_state iter
 
-            with nogil:
-                iter.length = 0
-                iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
-                if not iter.array:
-                    raise MemoryError()
+            iter.length = 0
+            iter.array = <uintptr_t *>malloc(128 * sizeof(uintptr_t))
+            if not iter.array:
+                raise MemoryError()
 
-                iter.alloc = 128
-                libzfs.zfs_iter_snapshots(self.handle, False, self.__iterate, <void*>&iter, 0, 0)
+            iter.alloc = 128
+            libzfs.zfs_iter_snapshots(self.handle, False, self.__iterate, <void*>&iter, 0, 0)
 
             try:
                 for h in range(0, iter.length):
