@@ -162,6 +162,7 @@ setup(
             libraries=libraries,
             extra_compile_args=extra_compile_args,
             cython_include_dirs=["./pxd"],
+            cython_directives={'warn.deprecated': False, 'show_performance_hints': False},
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
         )
