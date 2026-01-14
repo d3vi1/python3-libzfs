@@ -12,6 +12,50 @@ apt_has_pkg() {
   apt-cache show "$1" >/dev/null 2>&1
 }
 
+ensure_python_build() {
+  python3 - <<'PY' >/dev/null 2>&1
+try:
+    import build  # noqa: F401
+except Exception:
+    raise SystemExit(1)
+PY
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+
+  if command -v apt-get >/dev/null 2>&1; then
+    if apt_has_pkg python3-build; then
+      apt_install python3-build
+    fi
+  elif command -v dnf >/dev/null 2>&1; then
+    if dnf -q list --available python3-build >/dev/null 2>&1; then
+      dnf -y install python3-build
+    fi
+  fi
+
+  python3 - <<'PY' >/dev/null 2>&1
+try:
+    import build  # noqa: F401
+except Exception:
+    raise SystemExit(1)
+PY
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+
+  if ! python3 -m pip --version >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+      apt_install python3-pip
+    elif command -v dnf >/dev/null 2>&1; then
+      dnf -y install python3-pip
+    fi
+  fi
+
+  PIP_DISABLE_PIP_VERSION_CHECK=1 \
+  PIP_ROOT_USER_ACTION=ignore \
+    python3 -m pip install --no-cache-dir build
+}
+
 ensure_zfs_header() {
   local header=""
   if command -v rpm >/dev/null 2>&1; then
@@ -311,21 +355,30 @@ case "${STEP}" in
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt_install \
-          build-essential pkg-config python3 python3-dev python3-build python3-setuptools python3-wheel cython3 zfsutils-linux
+          build-essential pkg-config python3 python3-dev python3-setuptools python3-wheel python3-pip cython3 zfsutils-linux
+        if apt_has_pkg python3-build; then
+          apt_install python3-build
+        fi
         install_ubuntu_libzfs
         ;;
       rocky-el8)
         dnf -y install dnf-plugins-core epel-release
         dnf config-manager --set-enabled powertools || true
-        dnf -y install gcc make python3 python3-devel python3-build python3-setuptools python3-wheel pkgconf-pkg-config python3-Cython \
+        dnf -y install gcc make python3 python3-devel python3-setuptools python3-wheel python3-pip pkgconf-pkg-config python3-Cython \
           libblkid-devel libuuid-devel libtirpc-devel zlib-devel
+        if dnf -q list --available python3-build >/dev/null 2>&1; then
+          dnf -y install python3-build
+        fi
         install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
         ;;
       rocky-el9)
         dnf -y install dnf-plugins-core epel-release
         dnf config-manager --set-enabled crb || true
-        dnf -y install gcc make python3 python3-devel python3-build python3-setuptools python3-wheel pkgconf-pkg-config python3-Cython \
+        dnf -y install gcc make python3 python3-devel python3-setuptools python3-wheel python3-pip pkgconf-pkg-config python3-Cython \
           libblkid-devel libuuid-devel libtirpc-devel zlib-devel
+        if dnf -q list --available python3-build >/dev/null 2>&1; then
+          dnf -y install python3-build
+        fi
         install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
         ;;
       *)
@@ -364,6 +417,7 @@ PY
     ;;
   package)
     echo "==> Package"
+    ensure_python_build
     python3 -m build --no-isolation --sdist --wheel
     ;;
 esac
