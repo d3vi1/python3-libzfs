@@ -5,6 +5,7 @@ DISTRO=${1:?distro name required}
 
 install_common() {
   local pip_args=(--no-cache-dir)
+  export PIP_BREAK_SYSTEM_PACKAGES=1
   if python3 -m pip --help 2>/dev/null | grep -q -- '--break-system-packages'; then
     pip_args+=(--break-system-packages)
   fi
@@ -24,6 +25,19 @@ download_openzfs_headers() {
   cp -R /tmp/openzfs-src/include/* /usr/local/include/
 
   export CPPFLAGS="-I/usr/local/include"
+}
+
+ensure_zfs_header() {
+  local header
+  header=$(find /usr/include /usr/local/include /tmp/openzfs-src/include \
+    -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
+  if [[ -z "${header}" ]]; then
+    echo "sys/fs/zfs.h not found after installing headers." >&2
+    return 1
+  fi
+
+  local inc_root=${header%/sys/fs/zfs.h}
+  export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
 }
 
 install_ubuntu_libzfs() {
@@ -50,7 +64,10 @@ install_ubuntu_libzfs() {
 
 install_rocky_libzfs() {
   local release_rpm=$1
-  dnf -y install dnf-plugins-core ca-certificates curl tar
+  dnf -y install dnf-plugins-core ca-certificates tar
+  if ! command -v curl >/dev/null 2>&1; then
+    dnf -y install curl-minimal || dnf -y --allowerasing install curl
+  fi
   dnf -y install "${release_rpm}"
 
   dnf config-manager --set-enabled zfs || true
@@ -118,7 +135,8 @@ install_common
 echo "==> Build"
 python3 --version
 
-./configure
+ensure_zfs_header
+CPPFLAGS="${CPPFLAGS:-}" ./configure
 make
 
 # Minimal import check
