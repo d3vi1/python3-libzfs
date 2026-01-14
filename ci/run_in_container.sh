@@ -10,7 +10,16 @@ install_common() {
     pip_args+=(--break-system-packages)
   fi
 
-  python3 -m pip install "${pip_args[@]}" "cython<3"
+  local cython_spec="cython<3"
+  if python3 - <<'PY'
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 12) else 1)
+PY
+  then
+    cython_spec="cython>=3.0.11"
+  fi
+
+  python3 -m pip install "${pip_args[@]}" "${cython_spec}"
 }
 
 download_openzfs_headers() {
