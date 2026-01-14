@@ -49,13 +49,19 @@ ensure_zfs_header() {
   fi
 
   local inc_root=${header%/sys/fs/zfs.h}
-  export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
+  if [[ ${use_openzfs_primary} -eq 1 ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -idirafter ${inc_root}"
+  else
+    export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
+  fi
 
   local ioctl_header
   ioctl_header=$(find /usr/local/include /usr/include /usr/include/zfs /usr/src /tmp/openzfs-src/include \
     -path "*/sys/zfs_ioctl.h" -print -quit 2>/dev/null || true)
   if [[ -n "${ioctl_header}" ]]; then
-    if [[ "${ioctl_header}" == /tmp/openzfs-src/* && ${use_openzfs_primary} -eq 0 ]]; then
+    if [[ "${ioctl_header}" == /tmp/openzfs-src/* && ${use_openzfs_primary} -eq 1 ]]; then
+      export CPPFLAGS="${CPPFLAGS:-} -idirafter ${ioctl_header%/sys/zfs_ioctl.h}"
+    elif [[ "${ioctl_header}" == /tmp/openzfs-src/* && ${use_openzfs_primary} -eq 0 ]]; then
       export CPPFLAGS="${CPPFLAGS:-} -idirafter ${OPENZFS_SRC}/include"
     else
       export CPPFLAGS="${CPPFLAGS:-} -I${ioctl_header%/sys/zfs_ioctl.h}"
@@ -66,7 +72,11 @@ ensure_zfs_header() {
   libzfs_header=$(find /usr/local/include /usr/include /usr/include/libzfs /usr/src /tmp/openzfs-src/include \
     -path "*/libzfs.h" -print -quit 2>/dev/null || true)
   if [[ -n "${libzfs_header}" ]]; then
-    export CPPFLAGS="${CPPFLAGS:-} -I${libzfs_header%/libzfs.h}"
+    if [[ "${libzfs_header}" == /tmp/openzfs-src/* && ${use_openzfs_primary} -eq 1 ]]; then
+      export CPPFLAGS="${CPPFLAGS:-} -idirafter ${libzfs_header%/libzfs.h}"
+    else
+      export CPPFLAGS="${CPPFLAGS:-} -I${libzfs_header%/libzfs.h}"
+    fi
   fi
 
   local extra
@@ -79,7 +89,7 @@ ensure_zfs_header() {
   if [[ ${use_openzfs_primary} -eq 1 && -n "${OPENZFS_SRC:-}" ]]; then
     for extra in "${OPENZFS_SRC}/include" "${OPENZFS_SRC}/lib/libzfs"; do
       if [[ -d "${extra}" ]]; then
-        export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
+        export CPPFLAGS="${CPPFLAGS:-} -idirafter ${extra}"
       fi
     done
     for extra in "${OPENZFS_SRC}/include/os/linux" "${OPENZFS_SRC}/include/os/linux/spl"; do
@@ -281,7 +291,8 @@ fi
 make
 
 # Minimal import check
-python3 - <<'PY'
+build_dir=$(ls -d build/lib.* 2>/dev/null | head -n 1 || true)
+PYTHONPATH="${build_dir}${PYTHONPATH:+:$PYTHONPATH}" python3 - <<'PY'
 import libzfs
 print("libzfs import OK", libzfs.__name__)
 PY
