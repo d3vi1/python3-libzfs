@@ -4057,7 +4057,6 @@ do :
 		#include <sys/types.h>
 #include <stdint.h>
 #include <sys/fs/zfs.h>
-		#include <sys/zfs_ioctl.h>
 
 "
 if test "x$ac_cv_header_libzfs_h" = xyes

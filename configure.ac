@@ -322,7 +322,6 @@ if [[ "$zof" = false ]]; then
 		#include <stdint.h>
 		#include <sys/mnttab.h>
 		#include <sys/fs/zfs.h>
-		#include <sys/zfs_ioctl.h>
 	])
 else
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [

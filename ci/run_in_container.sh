@@ -56,12 +56,6 @@ ensure_zfs_header() {
     fi
   fi
 
-  local spl_types_header
-  spl_types_header=$(find /usr/src -path "*/include/os/linux/spl/sys/types.h" -print -quit 2>/dev/null || true)
-  if [[ -n "${spl_types_header}" ]]; then
-    export CPPFLAGS="${CPPFLAGS:-} -I${spl_types_header%/sys/types.h}"
-  fi
-
   local stdtypes_header=""
   if command -v rpm >/dev/null 2>&1; then
     stdtypes_header=$(rpm -ql libzfs5-devel libzfs-devel zfs-devel libspl-devel 2>/dev/null \
@@ -75,6 +69,23 @@ ensure_zfs_header() {
   fi
   if [[ -n "${stdtypes_header}" ]]; then
     export CPPFLAGS="${CPPFLAGS:-} -I${stdtypes_header%/sys/stdtypes.h}"
+  fi
+
+  if [[ -z "${libspl_root}" && -z "${stdtypes_header}" ]]; then
+    mkdir -p /tmp/zfs-compat
+    cat > /tmp/zfs-compat/zfs_compat.h <<'EOF'
+#include <sys/types.h>
+#include <stdint.h>
+#ifndef B_TRUE
+typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
+#define B_FALSE ((boolean_t)0)
+#define B_TRUE ((boolean_t)1)
+#endif
+#ifndef HAVE_HRTIME_T
+typedef long long hrtime_t;
+#endif
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -include /tmp/zfs-compat/zfs_compat.h"
   fi
 
   local extra
