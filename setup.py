@@ -29,6 +29,7 @@ import platform
 import shlex
 import subprocess
 import sys
+import sysconfig
 from collections import namedtuple
 from setuptools import setup
 
@@ -53,6 +54,11 @@ if platform.system().lower() == 'freebsd':
 
 extra_link_args = list(getattr(config, 'LDFLAGS', []))
 library_dirs = []
+
+
+def compiler_is_gcc_or_clang():
+    cc = os.environ.get('CC') or sysconfig.get_config_var('CC') or ''
+    return 'gcc' in cc or 'clang' in cc
 
 
 def pkg_config_libs():
@@ -134,6 +140,12 @@ else:
             [versioned['nvpair'], versioned['zfs'], versioned['zfs_core'], versioned['uutil']]
         )
 
+extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
+if platform.system().lower() == 'linux' and compiler_is_gcc_or_clang():
+    for flag in ('-Wno-unused-value', '-Wno-maybe-uninitialized', '-Wno-stringop-truncation'):
+        if flag not in extra_compile_args:
+            extra_compile_args.append(flag)
+
 
 setup(
     name='libzfs',
@@ -148,7 +160,7 @@ setup(
             "libzfs",
             ["libzfs.pyx"],
             libraries=libraries,
-            extra_compile_args=config.CFLAGS + config.CPPFLAGS,
+            extra_compile_args=extra_compile_args,
             cython_include_dirs=["./pxd"],
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
