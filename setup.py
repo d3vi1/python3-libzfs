@@ -34,9 +34,9 @@ from collections import namedtuple
 from setuptools import setup
 
 try:
-    from Cython import __version__ as cython_version
     from Cython.Distutils import build_ext
     from Cython.Distutils.extension import Extension
+    from Cython.Compiler import Errors as cython_errors
 except ImportError:
     raise ImportError("This package requires Cython to build properly. Please install it first.")
 
@@ -62,15 +62,10 @@ def compiler_is_gcc_or_clang():
     return 'gcc' in cc or 'clang' in cc
 
 
-def cython_directives():
-    try:
-        major = int(cython_version.split('.')[0])
-    except (ValueError, AttributeError):
-        return {}
-
-    if major >= 3:
-        return {'warn.deprecated': False, 'show_performance_hints': False}
-    return {}
+try:
+    cython_errors.LEVEL = 2
+except Exception:
+    pass
 
 
 def pkg_config_libs():
@@ -174,7 +169,6 @@ setup(
             libraries=libraries,
             extra_compile_args=extra_compile_args,
             cython_include_dirs=["./pxd"],
-            cython_directives=cython_directives(),
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
         )
