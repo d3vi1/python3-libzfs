@@ -21,10 +21,9 @@ download_openzfs_headers() {
   echo "==> Downloading OpenZFS headers ${tag}"
   mkdir -p /tmp/openzfs-src
   curl -fsSL "${url}" | tar -xz -C /tmp/openzfs-src --strip-components=1
-  mkdir -p /usr/local/include/openzfs
-  cp -R /tmp/openzfs-src/include/* /usr/local/include/openzfs/
+  cp -R /tmp/openzfs-src/include/* /usr/local/include/
 
-  export CPPFLAGS="-I/usr/local/include/openzfs -I/usr/local/include/openzfs/sys"
+  export CPPFLAGS="-I/usr/local/include"
 }
 
 install_ubuntu_libzfs() {
@@ -57,10 +56,14 @@ install_rocky_libzfs() {
   dnf config-manager --set-enabled zfs || true
 
   if ! dnf -y --enablerepo=zfs install zfs zfs-devel; then
-    dnf -y --enablerepo=zfs install libzfs libzfs-devel
+    if ! dnf -y --enablerepo=zfs install libzfs5 libzfs5-devel; then
+      dnf -y --enablerepo=zfs install libzfs libzfs-devel
+    fi
   fi
 
-  if ! rpm -q libzfs-devel >/dev/null 2>&1 && ! rpm -q zfs-devel >/dev/null 2>&1; then
+  if ! rpm -q libzfs5-devel >/dev/null 2>&1 \
+    && ! rpm -q libzfs-devel >/dev/null 2>&1 \
+    && ! rpm -q zfs-devel >/dev/null 2>&1; then
     local ver
     ver=$(rpm -q --qf '%{VERSION}' zfs 2>/dev/null || true)
     if [[ -n "${ver}" ]]; then
