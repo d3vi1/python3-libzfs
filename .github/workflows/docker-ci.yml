@@ -1,0 +1,37 @@
+name: Docker Build and Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - zfs-2.2
+      - main
+  workflow_dispatch:
+
+jobs:
+  docker-build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: ubuntu-focal
+            image: ubuntu:20.04
+          - name: ubuntu-jammy
+            image: ubuntu:22.04
+          - name: ubuntu-questing
+            image: ubuntu:25.10
+          - name: rocky-el8
+            image: rockylinux:8
+          - name: rocky-el9
+            image: rockylinux:9
+    name: ${{ matrix.target.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run build/test in container
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/work" \
+            -w /work \
+            "${{ matrix.target.image }}" \
+            bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }}"
