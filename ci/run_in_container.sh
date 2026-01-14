@@ -97,8 +97,8 @@ typedef unsigned long long u_longlong_t;
 #endif
 #ifndef B_TRUE
 typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
-#define B_FALSE ((boolean_t)0)
-#define B_TRUE ((boolean_t)1)
+#define B_FALSE 0
+#define B_TRUE 1
 #endif
 #ifndef HAVE_HRTIME_T
 typedef long long hrtime_t;
@@ -153,6 +153,24 @@ EOF
 EOF
       export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
     fi
+  fi
+
+  local libshare_header
+  libshare_header=$(find /usr/include /usr/local/include /usr/src \
+    -name "libshare.h" -print -quit 2>/dev/null || true)
+  if [[ -z "${libshare_header}" ]]; then
+    mkdir -p /tmp/zfs-compat
+    cat > /tmp/zfs-compat/libshare.h <<'EOF'
+#ifndef LIBSHARE_H
+#define LIBSHARE_H
+enum sa_protocol {
+	SA_PROTOCOL_NFS = 0,
+	SA_PROTOCOL_SMB = 1,
+	SA_NO_PROTOCOL = 255
+};
+#endif
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
   fi
 
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
