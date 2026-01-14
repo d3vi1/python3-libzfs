@@ -10,7 +10,7 @@ install_common() {
     pip_args+=(--break-system-packages)
   fi
 
-  python3 -m pip install "${pip_args[@]}" cython
+  python3 -m pip install "${pip_args[@]}" "cython<3"
 }
 
 download_openzfs_headers() {
