@@ -457,7 +457,7 @@ cdef extern from "libzfs.h" nogil:
         nvpair.nvlist_t *)
     extern int zfs_create_ancestors(libzfs_handle_t *, const char *)
     extern int zfs_destroy(zfs_handle_t *, int)
-    extern int zfs_destroy_snaps(zfs_handle_t *, const char *, int)
+    extern int zfs_destroy_snaps(zfs_handle_t *, char *, int)
     extern int zfs_destroy_snaps_nvl(libzfs_handle_t *, nvpair.nvlist_t *, int)
     extern int zfs_clone(zfs_handle_t *, const char *, nvpair.nvlist_t *)
     extern int zfs_snapshot(libzfs_handle_t *, const char *, int, nvpair.nvlist_t *)

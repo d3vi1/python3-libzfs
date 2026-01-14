@@ -4046,7 +4046,7 @@ cdef class ZFSDataset(ZFSResource):
         cdef int defer_deletion = defer
 
         with nogil:
-            ret = libzfs.zfs_destroy_snaps(self.handle, c_name, defer_deletion)
+            ret = libzfs.zfs_destroy_snaps(self.handle, <char *>c_name, defer_deletion)
 
         if ret != 0:
             raise self.root.get_error()

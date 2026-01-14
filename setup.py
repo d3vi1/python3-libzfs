@@ -149,7 +149,12 @@ else:
 
 extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
 if platform.system().lower() == 'linux' and compiler_is_gcc_or_clang():
-    for flag in ('-Wno-unused-value', '-Wno-maybe-uninitialized', '-Wno-stringop-truncation'):
+    for flag in (
+        '-Wno-unused-value',
+        '-Wno-maybe-uninitialized',
+        '-Wno-stringop-truncation',
+        '-Wno-cpp',
+    ):
         if flag not in extra_compile_args:
             extra_compile_args.append(flag)
 
