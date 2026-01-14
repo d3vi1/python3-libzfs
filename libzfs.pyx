@@ -16,6 +16,7 @@ cimport nvpair
 from datetime import datetime
 from libc.errno cimport errno
 from libc.string cimport memset, strncpy
+from libc.stddef cimport size_t
 from libc.stdlib cimport realloc
 
 import errno as py_errno
@@ -28,6 +29,19 @@ logger = logging.getLogger(__name__)
 include "config.pxi"
 include "nvpair.pxi"
 include "converter.pxi"
+
+cdef inline void clear_buf(char *buf, size_t buf_size) nogil:
+    if buf_size == 0:
+        return
+    memset(buf, 0, buf_size)
+
+
+cdef inline void copy_cstr(char *dst, size_t dst_size, const char *src) nogil:
+    if dst_size == 0:
+        return
+    memset(dst, 0, dst_size)
+    if src != NULL:
+        strncpy(dst, src, dst_size - 1)
 
 cdef extern from *:
     """
@@ -673,7 +687,7 @@ cdef class ZFS(object):
                     for child in vdev.children:
                         add_properties_to_vdev(child)
                 else:
-                    strncpy(vpath, vdev.path, zfs.MAXPATHLEN)
+                    copy_cstr(vpath, cython.sizeof(vpath), vdev.path)
                     with nogil:
                         whole_disk = zfs_dev_is_whole_disk(vpath)
                     (<ZFSVdev>vdev).set_whole_disk(whole_disk)
@@ -765,9 +779,9 @@ cdef class ZFS(object):
             for prop_name, prop_id in configuration_data['props'].get(dataset_type, {}).items():
                 csource = zfs.ZPROP_SRC_NONE
                 with nogil:
-                    strncpy(cvalue, '', libzfs.ZFS_MAXPROPLEN + 1)
-                    strncpy(crawvalue, '', libzfs.ZFS_MAXPROPLEN + 1)
-                    strncpy(csrcstr, '', MAX_DATASET_NAME_LEN + 1)
+                    clear_buf(cvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    clear_buf(crawvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    clear_buf(csrcstr, MAX_DATASET_NAME_LEN + 1)
 
                     if libzfs.zfs_prop_get(
                         handle, prop_id, cvalue, libzfs.ZFS_MAXPROPLEN,
@@ -1055,9 +1069,9 @@ cdef class ZFS(object):
             for prop_name, prop_id in (props if not simple_handle else {}).items():
                 csource = zfs.ZPROP_SRC_NONE
                 with nogil:
-                    strncpy(cvalue, '', libzfs.ZFS_MAXPROPLEN + 1)
-                    strncpy(crawvalue, '', libzfs.ZFS_MAXPROPLEN + 1)
-                    strncpy(csrcstr, '', MAX_DATASET_NAME_LEN + 1)
+                    clear_buf(cvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    clear_buf(crawvalue, libzfs.ZFS_MAXPROPLEN + 1)
+                    clear_buf(csrcstr, MAX_DATASET_NAME_LEN + 1)
 
                     if libzfs.zfs_prop_get(
                         handle, prop_id, cvalue, libzfs.ZFS_MAXPROPLEN,
@@ -4454,7 +4468,7 @@ cdef class ZFSSnapshot(ZFSResource):
             cdef int ret
 
             cmd.zc_cookie = fd
-            strncpy(cmd.zc_name, self.name, zfs.MAXPATHLEN)
+            copy_cstr(cmd.zc_name, cython.sizeof(cmd.zc_name), self.name)
 
             with nogil:
                 ret = libzfs.zfs_ioctl(self.root.handle, zfs.ZFS_IOC_SEND_PROGRESS, &cmd)
