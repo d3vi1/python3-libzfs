@@ -280,7 +280,7 @@ cdef extern from "sys/fs/zfs.h" nogil:
         ZPROP_ERR_NOCLEAR = 0x1
         ZPROP_ERR_NORESTORE = 0x2
     
-    ctypedef int (*zprop_func)(int, void *) except * nogil
+    ctypedef int (*zprop_func)(int, void *) nogil
     
     const char *zfs_prop_default_string(int)
     uint64_t zfs_prop_default_numeric(int)

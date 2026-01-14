@@ -49,7 +49,7 @@ IF HAVE_LIBZUTIL_HEADER:
                 int lpc_open_access_error
                 int lpc_desc_active
                 char lpc_desc[1024]
-                pool_config_ops_t *lpc_ops
+                const pool_config_ops_t *lpc_ops
                 void *lpc_lib_handle
             enum:
                 LPC_SUCCESS = 0
@@ -511,7 +511,7 @@ cdef extern from "libzfs.h" nogil:
     ELSE:
         extern uint64_t zvol_volsize_to_reservation(uint64_t, nvpair.nvlist_t *)
 
-    ctypedef int (*zfs_userspace_cb_t)(void *, const char *, uint32_t, uint64_t) except * nogil # XXX: uint32_t should be uid_t
+    ctypedef int (*zfs_userspace_cb_t)(void *, const char *, uint32_t, uint64_t) nogil # XXX: uint32_t should be uid_t
 
     extern int zfs_userspace(zfs_handle_t *, zfs.zfs_userquota_prop_t, zfs_userspace_cb_t, void *)
 
