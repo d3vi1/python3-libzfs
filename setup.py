@@ -159,6 +159,14 @@ if platform.system().lower() == 'linux' and compiler_is_gcc_or_clang():
             extra_compile_args.append(flag)
 
 
+cython_directives = {}
+try:
+    from Cython.Compiler import Options as cython_options
+    if 'show_performance_hints' in cython_options.directive_defaults:
+        cython_directives['show_performance_hints'] = False
+except Exception:
+    pass
+
 setup(
     name='libzfs',
     version='1.1',
@@ -169,7 +177,7 @@ setup(
             ["libzfs.pyx"],
             libraries=libraries,
             extra_compile_args=extra_compile_args,
-            cython_directives={'show_performance_hints': False},
+            cython_directives=cython_directives,
             cython_include_dirs=["./pxd"],
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
