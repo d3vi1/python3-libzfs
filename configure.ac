@@ -333,6 +333,20 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	[AC_SUBST(HAVE_ZPOOL_VDEV_ATTACH, 5) AC_MSG_NOTICE([5 params])]
 )
 
+dnl Checking parameters of zpool_add
+
+AC_MSG_NOTICE([Checking zpool_add parameters])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			zpool_add(NULL, NULL, B_FALSE);
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_ADD_PARAMS, 3) AC_MSG_NOTICE([3 params])],
+	[AC_SUBST(HAVE_ZPOOL_ADD_PARAMS, 2) AC_MSG_NOTICE([2 params])]
+)
+
 
 dnl Checking for existence of zfs_foreach_mountpoint function
 
@@ -348,6 +362,21 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	[AC_SUBST(HAVE_ZFS_FOREACH_MOUNTPOINT, 0) AC_MSG_NOTICE(NOT FOUND)]
 )
 
+dnl Checking zfs_foreach_mountpoint signature (uint_t vs boolean_t)
+
+AC_MSG_NOTICE([Checking zfs_foreach_mountpoint signature])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			void (*fn)(libzfs_handle_t *, zfs_handle_t **, size_t,
+				zfs_iter_f, void *, uint_t) = zfs_foreach_mountpoint;
+			(void) fn;
+		]
+	)],
+	[AC_SUBST(HAVE_ZFS_FOREACH_MOUNTPOINT_UINT, 1) AC_MSG_NOTICE([uint_t])],
+	[AC_SUBST(HAVE_ZFS_FOREACH_MOUNTPOINT_UINT, 0) AC_MSG_NOTICE([boolean_t])]
+)
 
 dnl Checking parameters of zvol_volsize_to_reservation function
 
@@ -434,6 +463,35 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	[AC_SUBST(HAVE_ZFS_ENCRYPTION, 0) AC_MSG_NOTICE([NOT SUPPORTED])]
 )
 
+dnl Checking zfs_crypto_load_key constness
+
+AC_MSG_NOTICE([Checking zfs_crypto_load_key constness])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			const char *keyloc = NULL;
+			zfs_crypto_load_key(NULL, B_FALSE, keyloc);
+		]
+	)],
+	[AC_SUBST(HAVE_ZFS_CRYPTO_LOAD_KEY_CONST, 1) AC_MSG_NOTICE([const char *])],
+	[AC_SUBST(HAVE_ZFS_CRYPTO_LOAD_KEY_CONST, 0) AC_MSG_NOTICE([char *])]
+)
+
+dnl Checking zfs_crypto_attempt_load_keys constness
+
+AC_MSG_NOTICE([Checking zfs_crypto_attempt_load_keys constness])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			const char *keyloc = NULL;
+			zfs_crypto_attempt_load_keys(NULL, keyloc);
+		]
+	)],
+	[AC_SUBST(HAVE_ZFS_CRYPTO_ATTEMPT_LOAD_KEYS_CONST, 1) AC_MSG_NOTICE([const char *])],
+	[AC_SUBST(HAVE_ZFS_CRYPTO_ATTEMPT_LOAD_KEYS_CONST, 0) AC_MSG_NOTICE([char *])]
+)
 
 dnl Checking function presence of vs_*_ashift existence
 
@@ -463,6 +521,88 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	)],
 	[AC_SUBST(HAVE_ZPOOL_GET_STATUS, 3) AC_MSG_NOTICE([3 PARAMS])],
 	[AC_SUBST(HAVE_ZPOOL_GET_STATUS, 2) AC_MSG_NOTICE([2 PARAMS])]
+)
+
+dnl Checking zpool_get_status constness
+
+AC_MSG_NOTICE([Checking zpool_get_status constness])
+
+AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 0)
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			const char *msg = NULL;
+			zpool_get_status(NULL, &msg, NULL) /* ; */
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 1) AC_MSG_NOTICE([const char ** (3 params)])],
+	[AC_LINK_IFELSE([AC_LANG_PROGRAM(
+			[#include <libzfs.h>],
+			[
+				const char *msg = NULL;
+				zpool_get_status(NULL, &msg) /* ; */
+			]
+		)],
+		[AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 1) AC_MSG_NOTICE([const char ** (2 params)])],
+		[AC_MSG_NOTICE([char **])]
+	)]
+)
+
+dnl Checking zpool_import_status constness
+
+AC_MSG_NOTICE([Checking zpool_import_status constness])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			const char *msg = NULL;
+			zpool_import_status(NULL, &msg) /* ; */
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 1) AC_MSG_NOTICE([const char **])],
+	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 0) AC_MSG_NOTICE([char **])]
+)
+
+dnl Checking parameters of zpool_expand_proplist
+
+AC_MSG_NOTICE([Checking zpool_expand_proplist parameters])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			zpool_expand_proplist(NULL, NULL, ZFS_TYPE_FILESYSTEM, B_FALSE);
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_EXPAND_PROPLIST_PARAMS, 4) AC_MSG_NOTICE([4 params])],
+	[AC_SUBST(HAVE_ZPOOL_EXPAND_PROPLIST_PARAMS, 3) AC_MSG_NOTICE([3 params])]
+)
+
+dnl Checking parameters of zpool_enable_datasets
+
+AC_MSG_NOTICE([Checking zpool_enable_datasets parameters])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			zpool_enable_datasets(NULL, NULL, 0, 0);
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_ENABLE_DATASETS_PARAMS, 4) AC_MSG_NOTICE([4 params])],
+	[AC_SUBST(HAVE_ZPOOL_ENABLE_DATASETS_PARAMS, 3) AC_MSG_NOTICE([3 params])]
+)
+
+dnl Checking parameters of zpool_explain_recover
+
+AC_MSG_NOTICE([Checking zpool_explain_recover parameters])
+
+AC_LINK_IFELSE([AC_LANG_PROGRAM(
+		[#include <libzfs.h>],
+		[
+			zpool_explain_recover(NULL, NULL, 0, NULL, NULL, 0);
+		]
+	)],
+	[AC_SUBST(HAVE_ZPOOL_EXPLAIN_RECOVER_PARAMS, 6) AC_MSG_NOTICE([6 params])],
+	[AC_SUBST(HAVE_ZPOOL_EXPLAIN_RECOVER_PARAMS, 4) AC_MSG_NOTICE([4 params])]
 )
 
 

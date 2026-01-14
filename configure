@@ -742,13 +742,22 @@ HAVE_ZFS_ITER_FILESYSTEMS
 HAVE_ZFS_SHARE
 HAVE_ZPOOL_SCAN
 HAVE_ZPOOL_GET_STATUS
+HAVE_ZPOOL_GET_STATUS_CONST
+HAVE_ZPOOL_IMPORT_STATUS_CONST
+HAVE_ZPOOL_ADD_PARAMS
+HAVE_ZPOOL_EXPAND_PROPLIST_PARAMS
+HAVE_ZPOOL_ENABLE_DATASETS_PARAMS
+HAVE_ZPOOL_EXPLAIN_RECOVER_PARAMS
 HAVE_ZFS_VDEV_STAT_ASHIFT
 HAVE_ZFS_ENCRYPTION
+HAVE_ZFS_CRYPTO_LOAD_KEY_CONST
+HAVE_ZFS_CRYPTO_ATTEMPT_LOAD_KEYS_CONST
 HAVE_ZPOOL_READ_LABEL_LIBZFS
 HAVE_ZPOOL_EVENTS_NEXT
 HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS
 HAVE_ZVOLSIZE_TO_RESERVATION_PARAMS
 HAVE_ZFS_FOREACH_MOUNTPOINT
+HAVE_ZFS_FOREACH_MOUNTPOINT_UINT
 HAVE_ZPOOL_VDEV_ATTACH
 HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL
 HAVE_ZPOOL_SEARCH_IMPORT_PARAMS
@@ -4093,6 +4102,38 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_add parameters" >&5
+printf "%s\n" "$as_me: Checking zpool_add parameters" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_add(NULL, NULL, B_FALSE);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_ADD_PARAMS=3
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 params" >&5
+printf "%s\n" "$as_me: 3 params" >&6;}
+else $as_nop
+  HAVE_ZPOOL_ADD_PARAMS=2
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 2 params" >&5
+printf "%s\n" "$as_me: 2 params" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking for existence of zfs_foreach_mountpoint" >&5
 printf "%s\n" "$as_me: Checking for existence of zfs_foreach_mountpoint" >&6;}
@@ -4119,6 +4160,40 @@ else $as_nop
   HAVE_ZFS_FOREACH_MOUNTPOINT=0
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: NOT FOUND" >&5
 printf "%s\n" "$as_me: NOT FOUND" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zfs_foreach_mountpoint signature" >&5
+printf "%s\n" "$as_me: Checking zfs_foreach_mountpoint signature" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			void (*fn)(libzfs_handle_t *, zfs_handle_t **, size_t,
+				zfs_iter_f, void *, uint_t) = zfs_foreach_mountpoint;
+			(void) fn;
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZFS_FOREACH_MOUNTPOINT_UINT=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: uint_t" >&5
+printf "%s\n" "$as_me: uint_t" >&6;}
+else $as_nop
+  HAVE_ZFS_FOREACH_MOUNTPOINT_UINT=0
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: boolean_t" >&5
+printf "%s\n" "$as_me: boolean_t" >&6;}
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -4317,6 +4392,72 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zfs_crypto_load_key constness" >&5
+printf "%s\n" "$as_me: Checking zfs_crypto_load_key constness" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			const char *keyloc = NULL;
+			zfs_crypto_load_key(NULL, B_FALSE, keyloc);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZFS_CRYPTO_LOAD_KEY_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char *" >&5
+printf "%s\n" "$as_me: const char *" >&6;}
+else $as_nop
+  HAVE_ZFS_CRYPTO_LOAD_KEY_CONST=0
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char *" >&5
+printf "%s\n" "$as_me: char *" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zfs_crypto_attempt_load_keys constness" >&5
+printf "%s\n" "$as_me: Checking zfs_crypto_attempt_load_keys constness" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			const char *keyloc = NULL;
+			zfs_crypto_attempt_load_keys(NULL, keyloc);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZFS_CRYPTO_ATTEMPT_LOAD_KEYS_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char *" >&5
+printf "%s\n" "$as_me: const char *" >&6;}
+else $as_nop
+  HAVE_ZFS_CRYPTO_ATTEMPT_LOAD_KEYS_CONST=0
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char *" >&5
+printf "%s\n" "$as_me: char *" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking existence of vs_*_ashift in fs/zfs.h header" >&5
 printf "%s\n" "$as_me: Checking existence of vs_*_ashift in fs/zfs.h header" >&6;}
@@ -4378,6 +4519,192 @@ else $as_nop
   HAVE_ZPOOL_GET_STATUS=2
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 2 PARAMS" >&5
 printf "%s\n" "$as_me: 2 PARAMS" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_get_status constness" >&5
+printf "%s\n" "$as_me: Checking zpool_get_status constness" >&6;}
+
+HAVE_ZPOOL_GET_STATUS_CONST=0
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			const char *msg = NULL;
+			zpool_get_status(NULL, &msg, NULL) /* ; */
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_GET_STATUS_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char ** (3 params)" >&5
+printf "%s\n" "$as_me: const char ** (3 params)" >&6;}
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+				const char *msg = NULL;
+				zpool_get_status(NULL, &msg) /* ; */
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_GET_STATUS_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char ** (2 params)" >&5
+printf "%s\n" "$as_me: const char ** (2 params)" >&6;}
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char **" >&5
+printf "%s\n" "$as_me: char **" >&6;}
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_import_status constness" >&5
+printf "%s\n" "$as_me: Checking zpool_import_status constness" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			const char *msg = NULL;
+			zpool_import_status(NULL, &msg) /* ; */
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_IMPORT_STATUS_CONST=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char **" >&5
+printf "%s\n" "$as_me: const char **" >&6;}
+else $as_nop
+  HAVE_ZPOOL_IMPORT_STATUS_CONST=0
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: char **" >&5
+printf "%s\n" "$as_me: char **" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_expand_proplist parameters" >&5
+printf "%s\n" "$as_me: Checking zpool_expand_proplist parameters" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_expand_proplist(NULL, NULL, ZFS_TYPE_FILESYSTEM, B_FALSE);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_EXPAND_PROPLIST_PARAMS=4
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 4 params" >&5
+printf "%s\n" "$as_me: 4 params" >&6;}
+else $as_nop
+  HAVE_ZPOOL_EXPAND_PROPLIST_PARAMS=3
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 params" >&5
+printf "%s\n" "$as_me: 3 params" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_enable_datasets parameters" >&5
+printf "%s\n" "$as_me: Checking zpool_enable_datasets parameters" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_enable_datasets(NULL, NULL, 0, 0);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_ENABLE_DATASETS_PARAMS=4
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 4 params" >&5
+printf "%s\n" "$as_me: 4 params" >&6;}
+else $as_nop
+  HAVE_ZPOOL_ENABLE_DATASETS_PARAMS=3
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 params" >&5
+printf "%s\n" "$as_me: 3 params" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_explain_recover parameters" >&5
+printf "%s\n" "$as_me: Checking zpool_explain_recover parameters" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_explain_recover(NULL, NULL, 0, NULL, NULL, 0);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  HAVE_ZPOOL_EXPLAIN_RECOVER_PARAMS=6
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 6 params" >&5
+printf "%s\n" "$as_me: 6 params" >&6;}
+else $as_nop
+  HAVE_ZPOOL_EXPLAIN_RECOVER_PARAMS=4
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 4 params" >&5
+printf "%s\n" "$as_me: 4 params" >&6;}
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -7707,5 +8034,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
-
