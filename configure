@@ -756,6 +756,7 @@ HAVE_ZFS_CRYPTO_ATTEMPT_LOAD_KEYS_CONST
 HAVE_ZPOOL_READ_LABEL_LIBZFS
 HAVE_ZPOOL_EVENTS_NEXT
 HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS
+HAVE_ZPOOL_FIND_IMPORT
 HAVE_ZVOLSIZE_TO_RESERVATION_PARAMS
 HAVE_ZFS_FOREACH_MOUNTPOINT
 HAVE_ZFS_FOREACH_MOUNTPOINT_UINT
@@ -3846,7 +3847,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_REWIND_POLICY_T=1
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: OK" >&5
@@ -3877,7 +3878,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_LOAD_POLICY_T=1
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: OK" >&5
@@ -3945,7 +3946,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_READ_LABEL_LIBZUTIL=1
  HAVE_ZPOOL_READ_LABEL_PARAMS=3
@@ -3982,7 +3983,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL=1
  HAVE_ZPOOL_SEARCH_IMPORT_PARAMS=3
@@ -4088,7 +4089,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_VDEV_ATTACH=6
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 6 params" >&5
@@ -4219,7 +4220,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZVOLSIZE_TO_RESERVATION_PARAMS=3
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 PARAMS" >&5
@@ -4259,6 +4260,38 @@ then :
 printf "%s\n" "$as_me: OK" >&6;}
 else $as_nop
   HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS=0
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: NOT FOUND" >&5
+printf "%s\n" "$as_me: NOT FOUND" >&6;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking existence of zpool_find_import in libzfs.h header" >&5
+printf "%s\n" "$as_me: Checking existence of zpool_find_import in libzfs.h header" >&6;}
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libzfs.h>
+int
+main (void)
+{
+
+			zpool_find_import(NULL, 0, NULL);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  HAVE_ZPOOL_FIND_IMPORT=1
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: OK" >&5
+printf "%s\n" "$as_me: OK" >&6;}
+else $as_nop
+  HAVE_ZPOOL_FIND_IMPORT=0
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: NOT FOUND" >&5
 printf "%s\n" "$as_me: NOT FOUND" >&6;}
 
@@ -4511,7 +4544,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_GET_STATUS=3
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: 3 PARAMS" >&5
@@ -4545,7 +4578,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_GET_STATUS_CONST=1
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char ** (3 params)" >&5
@@ -4566,7 +4599,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   HAVE_ZPOOL_GET_STATUS_CONST=1
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: const char ** (2 params)" >&5
@@ -6075,7 +6108,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   exists=1
 else $as_nop
@@ -6112,7 +6145,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"
+if ac_fn_c_try_compile "$LINENO"
 then :
   exists=1
 else $as_nop

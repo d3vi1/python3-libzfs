@@ -1264,8 +1264,10 @@ cdef class ZFS(object):
                 result = libzfs.zpool_search_import(&lpch, &iargs)
             ELIF HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
                 result = libzfs.zpool_search_import(self.handle, &iargs)
-            ELSE:
+            ELIF HAVE_ZPOOL_FIND_IMPORT:
                 result = libzfs.zpool_find_import(self.handle, iargs.paths, iargs.path)
+            ELSE:
+                result = NULL
             IF HAVE_THREAD_INIT_FINI:
                 thread_fini()
 

@@ -300,9 +300,10 @@ cdef extern from "libzfs.h" nogil:
     IF HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS and HAVE_ZPOOL_SEARCH_IMPORT_PARAMS == 2:
         extern nvpair.nvlist_t *zpool_search_import(libzfs_handle_t *, importargs_t *)
 
-    extern nvpair.nvlist_t *zpool_find_import(libzfs_handle_t *, int, char **)
-    extern nvpair.nvlist_t *zpool_find_import_cached(libzfs_handle_t *, const char *,
-        char *, uint64_t)
+    IF HAVE_ZPOOL_FIND_IMPORT:
+        extern nvpair.nvlist_t *zpool_find_import(libzfs_handle_t *, int, char **)
+        extern nvpair.nvlist_t *zpool_find_import_cached(libzfs_handle_t *, const char *,
+            char *, uint64_t)
 
     extern const char *zfs_history_event_names[]
 

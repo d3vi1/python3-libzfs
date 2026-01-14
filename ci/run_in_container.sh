@@ -23,7 +23,6 @@ download_openzfs_headers() {
   curl -fsSL "${url}" | tar -xz -C /tmp/openzfs-src --strip-components=1
 
   export OPENZFS_SRC=/tmp/openzfs-src
-  export CPPFLAGS="-I${OPENZFS_SRC}/include -I${OPENZFS_SRC}/lib/libzfs"
 }
 
 ensure_zfs_header() {
@@ -44,6 +43,11 @@ ensure_zfs_header() {
     return 1
   fi
 
+  local use_openzfs_primary=0
+  if [[ "${header}" == /tmp/openzfs-src/* ]]; then
+    use_openzfs_primary=1
+  fi
+
   local inc_root=${header%/sys/fs/zfs.h}
   export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
 
@@ -51,7 +55,11 @@ ensure_zfs_header() {
   ioctl_header=$(find /usr/local/include /usr/include /usr/include/zfs /usr/src /tmp/openzfs-src/include \
     -path "*/sys/zfs_ioctl.h" -print -quit 2>/dev/null || true)
   if [[ -n "${ioctl_header}" ]]; then
-    export CPPFLAGS="${CPPFLAGS:-} -I${ioctl_header%/sys/zfs_ioctl.h}"
+    if [[ "${ioctl_header}" == /tmp/openzfs-src/* && ${use_openzfs_primary} -eq 0 ]]; then
+      export CPPFLAGS="${CPPFLAGS:-} -idirafter ${OPENZFS_SRC}/include"
+    else
+      export CPPFLAGS="${CPPFLAGS:-} -I${ioctl_header%/sys/zfs_ioctl.h}"
+    fi
   fi
 
   local libzfs_header
@@ -62,16 +70,24 @@ ensure_zfs_header() {
   fi
 
   local extra
-  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs \
-    /tmp/openzfs-src/lib/libzfs; do
+  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs; do
     if [[ -d "${extra}" ]]; then
       export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
     fi
   done
 
+  if [[ ${use_openzfs_primary} -eq 1 && -n "${OPENZFS_SRC:-}" ]]; then
+    for extra in "${OPENZFS_SRC}/include" "${OPENZFS_SRC}/lib/libzfs" \
+      "${OPENZFS_SRC}/include/os/linux" "${OPENZFS_SRC}/include/os/linux/spl"; do
+      if [[ -d "${extra}" ]]; then
+        export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
+      fi
+    done
+  fi
+
   if [[ -d /usr/include/libspl || -d /usr/local/include/libspl ]]; then
     : # Prefer system libspl headers when available.
-  elif [[ -n "${OPENZFS_SRC:-}" ]]; then
+  elif [[ ${use_openzfs_primary} -eq 1 && -n "${OPENZFS_SRC:-}" ]]; then
     for extra in "${OPENZFS_SRC}/lib/libspl/include" "${OPENZFS_SRC}/lib/libspl/include/os/linux"; do
       if [[ -d "${extra}" ]]; then
         export CPPFLAGS="${CPPFLAGS:-} -I${extra}"

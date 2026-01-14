@@ -323,7 +323,7 @@ dnl Checking for parameters of zpool_vdev_attach
 
 AC_MSG_NOTICE([Checking zpool_vdev_attach parameters])
 
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			zpool_vdev_attach(NULL, NULL, NULL, NULL, 0, 0);
@@ -382,7 +382,7 @@ dnl Checking parameters of zvol_volsize_to_reservation function
 
 AC_MSG_NOTICE([Checking function signature zvol_volsize_to_reservation])
 
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			zvol_volsize_to_reservation(NULL, 0, NULL) /* ; */
@@ -405,6 +405,16 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	)],
 	[AC_SUBST(HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS, 1) AC_SUBST(HAVE_ZPOOL_SEARCH_IMPORT_PARAMS, 2) AC_MSG_NOTICE(OK)],
 	[AC_SUBST(HAVE_ZPOOL_SEARCH_IMPORT_LIBZFS, 0) AC_MSG_NOTICE(NOT FOUND)]
+)
+
+dnl Checking zpool_find_import existence in libzfs.h header
+
+AC_MSG_NOTICE([Checking existence of zpool_find_import in libzfs.h header])
+
+AC_CHECK_DECLS([zpool_find_import],
+	[AC_SUBST(HAVE_ZPOOL_FIND_IMPORT, 1) AC_MSG_NOTICE([OK])],
+	[AC_SUBST(HAVE_ZPOOL_FIND_IMPORT, 0) AC_MSG_NOTICE([NOT FOUND])],
+	[#include <libzfs.h>]
 )
 
 
@@ -513,7 +523,7 @@ dnl Checking function signature of zpool_get_status
 
 AC_MSG_NOTICE([Checking function signature of zpool_get_status])
 
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			zpool_get_status(NULL, NULL, NULL) /* ; */
@@ -528,7 +538,7 @@ dnl Checking zpool_get_status constness
 AC_MSG_NOTICE([Checking zpool_get_status constness])
 
 AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 0)
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs.h>],
 		[
 			const char *msg = NULL;
@@ -536,7 +546,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 		]
 	)],
 	[AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 1) AC_MSG_NOTICE([const char ** (3 params)])],
-	[AC_LINK_IFELSE([AC_LANG_PROGRAM(
+	[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 			[#include <libzfs.h>],
 			[
 				const char *msg = NULL;
@@ -1222,7 +1232,7 @@ dnl Checking lzc_bookmark existence
 AC_MSG_NOTICE([Verifying lzc_bookmark existence])
 
 exists=0
-AC_LINK_IFELSE([AC_LANG_PROGRAM(
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <libzfs_core.h>],
 		[
 			lzc_bookmark(NULL, NULL) /* ; */
@@ -1242,7 +1252,7 @@ then
 	AC_MSG_NOTICE([Verifying existence and params of lzc_send_space])
 
 	exists=0
-	AC_LINK_IFELSE([AC_LANG_PROGRAM(
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 			[#include <libzfs_core.h>],
 			[
 				lzc_send_space(NULL, NULL, LZC_SEND_FLAG_EMBED_DATA, NULL) /* ; */
