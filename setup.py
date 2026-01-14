@@ -26,10 +26,14 @@
 import glob
 import os
 import platform
+import re
 import shlex
+import shutil
 import subprocess
 import sys
 import sysconfig
+import tempfile
+from pathlib import Path
 from collections import namedtuple
 from setuptools import setup
 
@@ -138,6 +142,56 @@ else:
 extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
 define_macros = [('CYTHON_FALLTHROUGH', '((void)0)')]
 
+
+def _parse_cython_version():
+    try:
+        from Cython import __version__ as cython_version
+    except Exception:
+        return (0, 0, 0)
+
+    parts = re.split(r'[.+-]', cython_version)
+    version = []
+    for part in parts:
+        if part.isdigit():
+            version.append(int(part))
+        else:
+            break
+    while len(version) < 3:
+        version.append(0)
+    return tuple(version[:3])
+
+
+def _prepare_cython_sources():
+    if _parse_cython_version() < (3, 0, 0):
+        return None
+
+    root = Path(__file__).resolve().parent
+    temp_root = Path(tempfile.mkdtemp(prefix='pyzfs-cython-'))
+
+    for name in ('libzfs.pyx', 'nvpair.pxi', 'converter.pxi'):
+        shutil.copy2(root / name, temp_root / name)
+
+    shutil.copytree(root / 'pxd', temp_root / 'pxd', dirs_exist_ok=True)
+
+    pattern = re.compile(r'^(\\s*)(IF|ELIF|ELSE)\\b', re.M)
+    for path in temp_root.rglob('*'):
+        if path.suffix not in {'.pyx', '.pxd', '.pxi'}:
+            continue
+        text = path.read_text()
+        new = pattern.sub(lambda m: f\"{m.group(1)}{m.group(2).lower()}\", text)
+        if new != text:
+            path.write_text(new)
+
+    return temp_root
+
+
+project_root = Path(__file__).resolve().parent
+cython_src_root = _prepare_cython_sources()
+pyx_source = str((cython_src_root or project_root) / 'libzfs.pyx')
+cython_include_dirs = [str(project_root / 'pxd')]
+if cython_src_root is not None:
+    cython_include_dirs = [str(cython_src_root), str(cython_src_root / 'pxd')]
+
 setup(
     name='libzfs',
     version='1.1',
@@ -145,11 +199,11 @@ setup(
     ext_modules=[
         Extension(
             "libzfs",
-            ["libzfs.pyx"],
+            [pyx_source],
             libraries=libraries,
             extra_compile_args=extra_compile_args,
             define_macros=define_macros,
-            cython_include_dirs=["./pxd"],
+            cython_include_dirs=cython_include_dirs,
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
         )
