@@ -162,10 +162,6 @@ if platform.system().lower() == 'linux' and compiler_is_gcc_or_clang():
 setup(
     name='libzfs',
     version='1.1',
-    setup_requires=[
-        'setuptools>=18.0',
-        'Cython',
-    ],
     cmdclass={'build_ext': build_ext},
     ext_modules=[
         Extension(

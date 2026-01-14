@@ -42,6 +42,12 @@ cdef extern from *:
 IF HAVE_ZPOOL_GET_STATUS == 3:
     cdef extern from *:
         """
+        #if defined(__has_include)
+        #if __has_include(<libzfs.h>)
+        #include <libzfs.h>
+        #endif
+        #endif
+
         #ifndef PYZFS_TYPES_COMPATIBLE
         #if defined(__GNUC__) || defined(__clang__)
         #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
@@ -64,6 +70,12 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
 ELSE:
     cdef extern from *:
         """
+        #if defined(__has_include)
+        #if __has_include(<libzfs.h>)
+        #include <libzfs.h>
+        #endif
+        #endif
+
         #ifndef PYZFS_TYPES_COMPATIBLE
         #if defined(__GNUC__) || defined(__clang__)
         #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
