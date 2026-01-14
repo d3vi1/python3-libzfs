@@ -14,10 +14,8 @@ apt_has_pkg() {
 
 ensure_python_build() {
   python3 - <<'PY' >/dev/null 2>&1
-try:
-    import build  # noqa: F401
-except Exception:
-    raise SystemExit(1)
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("build.__main__") else 1)
 PY
   if [[ $? -eq 0 ]]; then
     return 0
@@ -34,10 +32,8 @@ PY
   fi
 
   python3 - <<'PY' >/dev/null 2>&1
-try:
-    import build  # noqa: F401
-except Exception:
-    raise SystemExit(1)
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("build.__main__") else 1)
 PY
   if [[ $? -eq 0 ]]; then
     return 0
@@ -417,7 +413,16 @@ PY
     ;;
   package)
     echo "==> Package"
-    ensure_python_build
-    python3 -m build --no-isolation --sdist --wheel
+    python3 - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
+PY
+    if [[ $? -eq 0 ]]; then
+      ensure_python_build
+      if python3 -m build --no-isolation --sdist --wheel; then
+        exit 0
+      fi
+    fi
+    python3 setup.py sdist bdist_wheel
     ;;
 esac

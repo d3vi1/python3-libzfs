@@ -4596,6 +4596,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_get_status constness" >&5
 printf "%s\n" "$as_me: Checking zpool_get_status constness" >&6;}
 
+save_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
+
 HAVE_ZPOOL_GET_STATUS_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -4651,9 +4654,14 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
+CFLAGS=$save_CFLAGS
+
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_import_status constness" >&5
 printf "%s\n" "$as_me: Checking zpool_import_status constness" >&6;}
+
+save_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -4684,6 +4692,8 @@ printf "%s\n" "$as_me: char **" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+
+CFLAGS=$save_CFLAGS
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking zpool_import_status parameters" >&5
@@ -6984,6 +6994,8 @@ done
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvpair_value_string constness" >&5
 printf "%s\n" "$as_me: Checking nvpair_value_string constness" >&6;}
 PYZFS_NVPAIR_VALUE_STRING_CONST=0
+save_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
@@ -7129,6 +7141,8 @@ else $as_nop
 printf "%s\n" "$as_me: nvlist_t **" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+CFLAGS=$save_CFLAGS
 
 
 	echo >& 6

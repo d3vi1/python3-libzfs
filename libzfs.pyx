@@ -2082,7 +2082,7 @@ cdef class ZFSProperty(object):
         cdef ZFSObject dset
         cdef int ret
         cdef int c_recursive = recursive
-        cdef zfs.zfs_prop_t prop
+        cdef zfs.zfs_prop_t prop = zfs.ZPROP_INVAL
 
         self.refresh()
 

@@ -567,6 +567,9 @@ dnl Checking zpool_get_status constness
 
 AC_MSG_NOTICE([Checking zpool_get_status constness])
 
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
+
 AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 0)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
@@ -590,9 +593,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 	)]
 )
 
+CFLAGS="$save_CFLAGS"
+
 dnl Checking zpool_import_status constness
 
 AC_MSG_NOTICE([Checking zpool_import_status constness])
+
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
@@ -605,6 +613,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 1) AC_MSG_NOTICE([const char **])],
 	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 0) AC_MSG_NOTICE([char **])]
 )
+
+CFLAGS="$save_CFLAGS"
 
 dnl Checking parameters of zpool_import_status
 
@@ -1510,6 +1520,8 @@ AC_CHECK_HEADERS([sys/nvpair.h],
 
 AC_MSG_NOTICE([Checking nvpair_value_string constness])
 AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_CONST, 0)
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
 		#if defined(__has_include)
@@ -1596,6 +1608,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 	[AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 1) AC_MSG_NOTICE([const nvlist_t * const *])],
 	[AC_MSG_NOTICE([nvlist_t **])]
 )
+
+CFLAGS="$save_CFLAGS"
 
 
 SECTION_TITLE([RUNNING TESTS ON sys/zfs_context_userland.h HEADER])

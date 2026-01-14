@@ -28,11 +28,9 @@ import os
 import platform
 import re
 import shlex
-import shutil
 import subprocess
 import sys
 import sysconfig
-import tempfile
 from pathlib import Path
 from collections import namedtuple
 from setuptools import setup
@@ -140,7 +138,7 @@ else:
         )
 
 extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
-define_macros = [('CYTHON_FALLTHROUGH', 'do { } while (0)')]
+define_macros = []
 
 
 def _parse_cython_version():
@@ -162,27 +160,7 @@ def _parse_cython_version():
 
 
 def _prepare_cython_sources():
-    if _parse_cython_version() < (3, 0, 0):
-        return None
-
-    root = Path(__file__).resolve().parent
-    temp_root = Path(tempfile.mkdtemp(prefix='pyzfs-cython-'))
-
-    for name in ('libzfs.pyx', 'nvpair.pxi', 'converter.pxi'):
-        shutil.copy2(root / name, temp_root / name)
-
-    shutil.copytree(root / 'pxd', temp_root / 'pxd', dirs_exist_ok=True)
-
-    pattern = re.compile(r'^(\s*)(IF|ELIF|ELSE)\b', re.M)
-    for path in temp_root.rglob('*'):
-        if path.suffix not in {'.pyx', '.pxd', '.pxi'}:
-            continue
-        text = path.read_text()
-        new = pattern.sub(lambda m: f"{m.group(1)}{m.group(2).lower()}", text)
-        if new != text:
-            path.write_text(new)
-
-    return temp_root
+    return None
 
 
 project_root = Path(__file__).resolve().parent
