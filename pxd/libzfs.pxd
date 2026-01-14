@@ -196,7 +196,7 @@ cdef extern from "libzfs.h" nogil:
     extern const char *zpool_state_to_name(zfs.vdev_state_t, zfs.vdev_aux_t)
     extern const char *zpool_pool_state_to_name(pool_state_t)
     extern void zpool_free_handles(libzfs_handle_t *)
-    ctypedef int (*zpool_iter_f)(zpool_handle_t *, void *) except * nogil
+    ctypedef int (*zpool_iter_f)(zpool_handle_t *, void *) nogil
     extern int zpool_iter(libzfs_handle_t *, zpool_iter_f, void *)
     extern int zpool_create(libzfs_handle_t *, const char *, nvpair.nvlist_t *,
         nvpair.nvlist_t *, nvpair.nvlist_t *)
@@ -417,7 +417,7 @@ cdef extern from "libzfs.h" nogil:
         const char *, const char *, zprop_source_t, const char *,
         const char *)
 
-    ctypedef int (*zfs_iter_f)(zfs_handle_t *, void *) except * nogil
+    ctypedef int (*zfs_iter_f)(zfs_handle_t *, void *) nogil
     extern int zfs_iter_root(libzfs_handle_t *, zfs_iter_f, void *)
     IF HAVE_ZFS_ITER_CHILDREN == 4:
         extern int zfs_iter_children(zfs_handle_t *, int, zfs_iter_f, void *)
@@ -486,7 +486,7 @@ cdef extern from "libzfs.h" nogil:
 
         extern int zfs_rename(zfs_handle_t *, const char *, boolean_t, boolean_t)
 
-    ctypedef int (*snapfilter_cb_t)(zfs_handle_t *, void *) except * nogil
+    ctypedef int (*snapfilter_cb_t)(zfs_handle_t *, void *) nogil
 
     extern int zfs_send(zfs_handle_t *, const char *, const char *,
         sendflags_t *, int, snapfilter_cb_t, void *, nvpair.nvlist_t **) nogil

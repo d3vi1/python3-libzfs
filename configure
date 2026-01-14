@@ -3952,6 +3952,7 @@ HAVE_ZPOOL_READ_LABEL_PARAMS=0
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzutil.h>
 int
 main (void)
@@ -3989,6 +3990,7 @@ HAVE_ZPOOL_SEARCH_IMPORT_PARAMS=0
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzutil.h>
 int
 main (void)
@@ -4010,6 +4012,7 @@ printf "%s\n" "$as_me: OK" >&6;}
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzutil.h>
 int
 main (void)
@@ -4095,6 +4098,7 @@ printf "%s\n" "$as_me: Checking zpool_vdev_attach parameters" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4127,6 +4131,7 @@ printf "%s\n" "$as_me: Checking zpool_add parameters" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4159,6 +4164,7 @@ printf "%s\n" "$as_me: Checking for existence of zfs_foreach_mountpoint" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4189,6 +4195,7 @@ printf "%s\n" "$as_me: Checking zfs_foreach_mountpoint signature" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4223,6 +4230,7 @@ printf "%s\n" "$as_me: Checking function signature zvol_volsize_to_reservation" 
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4256,6 +4264,7 @@ printf "%s\n" "$as_me: Checking existence of zpool_search_import in libzfs.h hea
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4289,6 +4298,7 @@ printf "%s\n" "$as_me: Checking existence of zpool_find_import in libzfs.h heade
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4321,6 +4331,7 @@ printf "%s\n" "$as_me: Checking existence of zpool_events_next in libzfs.h heade
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4353,6 +4364,7 @@ printf "%s\n" "$as_me: Checking existence of zpool_read_label with 2 params in l
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4386,6 +4398,7 @@ printf "%s\n" "$as_me: Checking existence of zpool_read_label with 3 params in l
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4414,6 +4427,7 @@ printf "%s\n" "$as_me: Checking existence of ZFS Native encryption support  in l
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4446,6 +4460,7 @@ printf "%s\n" "$as_me: Checking zfs_crypto_load_key constness" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4479,6 +4494,7 @@ printf "%s\n" "$as_me: Checking zfs_crypto_attempt_load_keys constness" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4549,6 +4565,7 @@ printf "%s\n" "$as_me: Checking function signature of zpool_get_status" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4582,6 +4599,7 @@ printf "%s\n" "$as_me: Checking zpool_get_status constness" >&6;}
 HAVE_ZPOOL_GET_STATUS_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4603,6 +4621,7 @@ printf "%s\n" "$as_me: const char ** (3 params)" >&6;}
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4638,6 +4657,7 @@ printf "%s\n" "$as_me: Checking zpool_import_status constness" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4671,6 +4691,7 @@ printf "%s\n" "$as_me: Checking zpool_import_status parameters" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4703,6 +4724,7 @@ printf "%s\n" "$as_me: Checking zpool_expand_proplist parameters" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4735,6 +4757,7 @@ printf "%s\n" "$as_me: Checking zpool_enable_datasets parameters" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4766,6 +4789,7 @@ printf "%s\n" "$as_me: Checking zpool_explain_recover parameters" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4799,6 +4823,7 @@ printf "%s\n" "$as_me: Checking function signature of zpool_scan" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4831,6 +4856,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_share" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4863,6 +4889,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_iter_filesystems" >&6;
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4895,6 +4922,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_iter_snapspec" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4927,6 +4955,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_iter_dependents" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4959,6 +4988,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_iter_bookmarks" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -4991,6 +5021,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_iter_snapshots_sorted"
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5023,6 +5054,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_iter_children" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5056,6 +5088,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_send_one" >&6;}
 if [ "$zof" = false ]; then
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5083,6 +5116,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 else
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5117,6 +5151,7 @@ printf "%s\n" "$as_me: Checking EZFS_SCRUB_PAUSED presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5149,6 +5184,7 @@ printf "%s\n" "$as_me: Checking ZPOOL_STATUS_ERRATA presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5191,6 +5227,7 @@ printf "%s\n" "$as_me: Checking ZPOOL_STATUS_REBUILDING presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5233,6 +5270,7 @@ printf "%s\n" "$as_me: Checking ZPOOL_STATUS_REBUILD_SCRUB presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5275,6 +5313,7 @@ printf "%s\n" "$as_me: Checking ZPOOL_STATUS_NON_NATIVE_ASHIFT presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5313,6 +5352,7 @@ printf "%s\n" "$as_me: Checking ZPOOL_STATUS_COMPATIBILITY_ERR presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5355,6 +5395,7 @@ printf "%s\n" "$as_me: Checking ZPOOL_STATUS_INCOMPATIBLE_FEAT presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5397,6 +5438,7 @@ printf "%s\n" "$as_me: Checking LZC_SEND_FLAG_EMBED_DATA presence" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5429,6 +5471,7 @@ printf "%s\n" "$as_me: Checking params for zfs_receive" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5449,6 +5492,7 @@ printf "%s\n" "$as_me: 7 params" >&6;}
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5484,6 +5528,7 @@ printf "%s\n" "$as_me: Checking existence of zfs_send_resume and zfs_send_resume
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5523,6 +5568,7 @@ then :
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5565,6 +5611,7 @@ printf "%s\n" "$as_me: Checking existence of renameflags_t in libzfs.h" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5601,6 +5648,7 @@ printf "%s\n" "$as_me: Checking renameflags_t member names in libzfs.h" >&6;}
 
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5633,6 +5681,7 @@ printf "%s\n" "$as_me: Checking function signature of zfs_rename in libzfs.h" >&
 
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5671,6 +5720,7 @@ then :
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5713,6 +5763,7 @@ printf "%s\n" "$as_me: Checking for resumable member in recvflags_t struct" >&6;
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5746,6 +5797,7 @@ printf "%s\n" "$as_me: Checking typedef sendflags_t in libzfs header" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5779,6 +5831,7 @@ printf "%s\n" "$as_me: Checking attribute name for verbose in sendflags_t struct
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5822,6 +5875,7 @@ printf "%s\n" "$as_me: Checking for dedup member in sendflags_t struct" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5865,6 +5919,7 @@ printf "%s\n" "$as_me: Checking for compress member in sendflags_t struct" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5908,6 +5963,7 @@ printf "%s\n" "$as_me: Checking for raw member in sendflags_t struct" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5951,6 +6007,7 @@ printf "%s\n" "$as_me: Checking for backup member in sendflags_t struct" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -5994,6 +6051,7 @@ printf "%s\n" "$as_me: Checking for holds member in sendflags_t struct" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -6037,6 +6095,7 @@ printf "%s\n" "$as_me: Checking for saved member in sendflags_t struct" >&6;}
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)
@@ -6080,6 +6139,7 @@ printf "%s\n" "$as_me: Checking for progressastitle member in sendflags_t struct
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #include <libzfs.h>
 int
 main (void)

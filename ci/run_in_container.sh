@@ -214,6 +214,22 @@ EOF
     export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
   fi
 
+  if [[ ! -e /usr/include/ucred.h ]]; then
+    mkdir -p /tmp/zfs-compat
+    cat > /tmp/zfs-compat/ucred.h <<'EOF'
+#ifndef _UCRED_H
+#define _UCRED_H
+#include <sys/types.h>
+struct ucred {
+	pid_t pid;
+	uid_t uid;
+	gid_t gid;
+};
+#endif
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+  fi
+
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
