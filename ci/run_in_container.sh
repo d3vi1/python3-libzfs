@@ -8,6 +8,10 @@ apt_install() {
   apt-get install -y --no-install-recommends "$@"
 }
 
+apt_has_pkg() {
+  apt-cache show "$1" >/dev/null 2>&1
+}
+
 ensure_zfs_header() {
   local header=""
   if command -v rpm >/dev/null 2>&1; then
@@ -52,9 +56,17 @@ ensure_zfs_header() {
     fi
   fi
 
-  local stdtypes_header
-  stdtypes_header=$(find /usr/src /usr/include /usr/local/include \
-    -path "*/sys/stdtypes.h" -print -quit 2>/dev/null || true)
+  local stdtypes_header=""
+  if command -v rpm >/dev/null 2>&1; then
+    stdtypes_header=$(rpm -ql libzfs5-devel libzfs-devel zfs-devel libspl-devel 2>/dev/null \
+      | grep -m1 '/sys/stdtypes.h$' || true)
+  elif command -v dpkg >/dev/null 2>&1; then
+    stdtypes_header=$(dpkg -S "/sys/stdtypes.h" 2>/dev/null | head -n1 | awk -F': ' '{print $2}')
+  fi
+  if [[ -z "${stdtypes_header}" ]]; then
+    stdtypes_header=$(find /usr/src /usr/include /usr/local/include \
+      -path "*/sys/stdtypes.h" -print -quit 2>/dev/null || true)
+  fi
   if [[ -n "${stdtypes_header}" ]]; then
     export CPPFLAGS="${CPPFLAGS:-} -I${stdtypes_header%/sys/stdtypes.h}"
   fi
@@ -87,9 +99,17 @@ EOF
   fi
 
   if [[ ! -e /usr/include/sys/zfs_ioctl.h ]]; then
-    local ioctl_any
-    ioctl_any=$(find /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /usr/src \
-      -name "zfs_ioctl.h" -print -quit 2>/dev/null || true)
+    local ioctl_any=""
+    if command -v rpm >/dev/null 2>&1; then
+      ioctl_any=$(rpm -ql libzfs5-devel libzfs-devel zfs-devel 2>/dev/null \
+        | grep -m1 'zfs_ioctl.h$' || true)
+    elif command -v dpkg >/dev/null 2>&1; then
+      ioctl_any=$(dpkg -S "zfs_ioctl.h" 2>/dev/null | head -n1 | awk -F': ' '{print $2}')
+    fi
+    if [[ -z "${ioctl_any}" ]]; then
+      ioctl_any=$(find /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /usr/src \
+        -name "zfs_ioctl.h" -print -quit 2>/dev/null || true)
+    fi
     if [[ -n "${ioctl_any}" ]]; then
       mkdir -p /tmp/zfs-compat/sys
       cat > /tmp/zfs-compat/sys/zfs_ioctl.h <<EOF
@@ -124,12 +144,26 @@ install_ubuntu_libzfs() {
   fi
 
   local pkg
-  for pkg in libzfs-dev libzfs4linux-dev libzfs2linux-dev; do
-    if apt_install "${pkg}"; then
+  for pkg in \
+    libzfs-dev \
+    libzfs6linux-dev \
+    libzfs5linux-dev \
+    libzfs5-dev \
+    libzfs4linux-dev \
+    libzfs4-dev \
+    libzfs2linux-dev \
+    libzfs2-dev; do
+    if apt_has_pkg "${pkg}" && apt_install "${pkg}"; then
+      if apt_has_pkg libspl-dev; then
+        apt_install libspl-dev || true
+      fi
       return
     fi
   done
-  if apt_install zfs-dkms; then
+  if apt_has_pkg zfs-dkms && apt_install zfs-dkms; then
+    if apt_has_pkg libspl-dev; then
+      apt_install libspl-dev || true
+    fi
     return
   fi
   echo "No libzfs development package found for ${DISTRO}." >&2
