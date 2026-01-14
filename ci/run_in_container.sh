@@ -76,6 +76,25 @@ ensure_zfs_header() {
     cat > /tmp/zfs-compat/zfs_compat.h <<'EOF'
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdarg.h>
+#ifndef uchar_t
+typedef unsigned char uchar_t;
+#endif
+#ifndef ushort_t
+typedef unsigned short ushort_t;
+#endif
+#ifndef uint_t
+typedef unsigned int uint_t;
+#endif
+#ifndef ulong_t
+typedef unsigned long ulong_t;
+#endif
+#ifndef longlong_t
+typedef long long longlong_t;
+#endif
+#ifndef u_longlong_t
+typedef unsigned long long u_longlong_t;
+#endif
 #ifndef B_TRUE
 typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
 #define B_FALSE ((boolean_t)0)
