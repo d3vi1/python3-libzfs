@@ -41,6 +41,13 @@ ensure_zfs_header() {
 
   local inc_root=${header%/sys/fs/zfs.h}
   export CPPFLAGS="${CPPFLAGS:-} -I${inc_root}"
+
+  local extra
+  for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs; do
+    if [[ -d "${extra}" ]]; then
+      export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
+    fi
+  done
 }
 
 add_pkg_config_cppflags() {
@@ -70,6 +77,9 @@ install_ubuntu_libzfs() {
       return
     fi
   done
+  if apt-get install -y --no-install-recommends zfs-dkms; then
+    return
+  fi
 
   local ver
   ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
@@ -156,7 +166,11 @@ python3 --version
 
 add_pkg_config_cppflags
 ensure_zfs_header
-CPPFLAGS="${CPPFLAGS:-}" ./configure
+if ! CPPFLAGS="${CPPFLAGS:-}" ./configure; then
+  echo "configure failed; tailing config.log" >&2
+  tail -n 200 config.log || true
+  exit 1
+fi
 make
 
 # Minimal import check
