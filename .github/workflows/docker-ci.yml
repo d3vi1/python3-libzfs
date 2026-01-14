@@ -61,3 +61,8 @@ jobs:
       - name: Cleanup container
         if: always()
         run: docker rm -f "build-${{ matrix.target.name }}"
+      - name: Fix cache permissions
+        if: always()
+        run: |
+          sudo chown -R "$USER:$USER" .cache || true
+          sudo chmod -R u+rwX .cache || true
