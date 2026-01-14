@@ -27,7 +27,7 @@ download_openzfs_headers() {
 }
 
 ensure_zfs_header() {
-  local header
+  local header=""
   if command -v rpm >/dev/null 2>&1; then
     header=$(rpm -ql libzfs5-devel 2>/dev/null | grep -m1 '/sys/fs/zfs.h$' || true)
   fi
@@ -112,7 +112,7 @@ install_ubuntu_libzfs() {
 
 install_rocky_libzfs() {
   local release_rpm=$1
-  dnf -y install dnf-plugins-core ca-certificates tar
+  dnf -y install ca-certificates tar
   if ! command -v curl >/dev/null 2>&1; then
     dnf -y install curl-minimal || dnf -y --allowerasing install curl
   fi
@@ -165,11 +165,15 @@ case "${DISTRO}" in
     install_ubuntu_libzfs
     ;;
   rocky-el8)
+    dnf -y install dnf-plugins-core
+    dnf config-manager --set-enabled powertools || true
     dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config \
       libblkid-devel libuuid-devel libtirpc-devel zlib-devel
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
     ;;
   rocky-el9)
+    dnf -y install dnf-plugins-core
+    dnf config-manager --set-enabled crb || true
     dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config \
       libblkid-devel libuuid-devel libtirpc-devel zlib-devel
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
