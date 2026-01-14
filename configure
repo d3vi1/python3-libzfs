@@ -4048,12 +4048,27 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 
 
 
+for ac_header in sys/mnttab.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "sys/mnttab.h" "ac_cv_header_sys_mnttab_h" "
+"
+if test "x$ac_cv_header_sys_mnttab_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_SYS_MNTTAB_H 1" >>confdefs.h
+
+fi
+
+done
+
+
 if [ "$zof" = false ]; then
 	       for ac_header in libzfs.h
 do :
   ac_fn_c_check_header_compile "$LINENO" "libzfs.h" "ac_cv_header_libzfs_h" "
 		#include <sys/types.h>
+#ifdef HAVE_SYS_MNTTAB_H
 		#include <sys/mnttab.h>
+#endif
 		#include <sys/types.h>
 #include <stdint.h>
 #include <sys/fs/zfs.h>
@@ -4073,7 +4088,9 @@ else
 do :
   ac_fn_c_check_header_compile "$LINENO" "libzfs.h" "ac_cv_header_libzfs_h" "
 		#include <sys/types.h>
+#ifdef HAVE_SYS_MNTTAB_H
 		#include <sys/mnttab.h>
+#endif
 		#include <sys/types.h>
 #include <stdint.h>
 #include <sys/fs/zfs.h>

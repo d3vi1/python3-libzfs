@@ -315,19 +315,24 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 
 SECTION_TITLE([RUNNING TESTS ON libzfs.h HEADER])
 
+AC_CHECK_HEADERS([sys/mnttab.h])
 
 if [[ "$zof" = false ]]; then
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
 		#include <stdint.h>
+#ifdef HAVE_SYS_MNTTAB_H
 		#include <sys/mnttab.h>
+#endif
 		#include <sys/fs/zfs.h>
 	])
 else
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
 		#include <stdint.h>
+#ifdef HAVE_SYS_MNTTAB_H
 		#include <sys/mnttab.h>
+#endif
 		#include <sys/fs/zfs.h>
 	])
 fi
