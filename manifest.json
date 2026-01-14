@@ -25,7 +25,31 @@
         "rocky_common": [
             "zfs >= 2.2",
             "zfs < 2.3"
-        ]
+        ],
+        "ubuntu": {
+            "ubuntu-focal": [
+                "zfsutils (>= 2.2)",
+                "zfsutils (<< 2.3)"
+            ],
+            "ubuntu-jammy": [
+                "zfsutils (>= 2.2)",
+                "zfsutils (<< 2.3)"
+            ],
+            "ubuntu-questing": [
+                "zfsutils (>= 2.3)",
+                "zfsutils (<< 2.4)"
+            ]
+        },
+        "rocky": {
+            "rocky-el8": [
+                "zfs >= 2.1",
+                "zfs < 2.2"
+            ],
+            "rocky-el9": [
+                "zfs >= 2.2",
+                "zfs < 2.3"
+            ]
+        }
     },
     "builds": [
         {
@@ -37,6 +61,11 @@
             "group": "ubuntu",
             "os_name": "ubuntu-jammy",
             "image": "ci.cr.45d.io/ci/zfs/ubuntu-jammy:1"
+        },
+        {
+            "group": "ubuntu",
+            "os_name": "ubuntu-questing",
+            "image": "ci.cr.45d.io/ci/zfs/ubuntu-questing:1"
         },
         {
             "group": "rocky",

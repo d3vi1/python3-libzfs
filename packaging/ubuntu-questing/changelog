@@ -1,0 +1,5 @@
+python3-libzfs (2.2.1-6questing) questing; urgency=medium
+
+  * build for questing
+
+ -- Brett Kelly <bkelly@45drives.com>  Tue, 14 Jan 2026 12:15:00 -0400
