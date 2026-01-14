@@ -3,11 +3,20 @@ set -euo pipefail
 
 DISTRO=${1:?distro name required}
 
+apt_install() {
+  apt-get install -y --no-install-recommends "$@" \
+    2> >(grep -v 'update-alternatives: warning:' >&2 || true)
+}
+
 install_common() {
   local pip_args=(--no-cache-dir)
   export PIP_BREAK_SYSTEM_PACKAGES=1
+  export PIP_ROOT_USER_ACTION=ignore
   if python3 -m pip --help 2>/dev/null | grep -q -- '--break-system-packages'; then
     pip_args+=(--break-system-packages)
+  fi
+  if python3 -m pip --help 2>/dev/null | grep -q -- '--root-user-action'; then
+    pip_args+=(--root-user-action=ignore)
   fi
 
   local cython_spec="cython<3"
@@ -153,17 +162,17 @@ add_pkg_config_cppflags() {
 }
 
 install_ubuntu_libzfs() {
-  apt-get install -y --no-install-recommends ca-certificates curl
+  apt_install ca-certificates curl
 
   if ! grep -Rqs "^deb .* universe" /etc/apt/sources.list /etc/apt/sources.list.d; then
-    apt-get install -y --no-install-recommends software-properties-common
+    apt_install software-properties-common
     add-apt-repository -y universe || true
     apt-get update
   fi
 
   local pkg
   for pkg in libzfs-dev libzfs4linux-dev libzfs2linux-dev; do
-    if apt-get install -y --no-install-recommends "${pkg}"; then
+    if apt_install "${pkg}"; then
       return
     fi
   done
@@ -222,21 +231,21 @@ case "${DISTRO}" in
   ubuntu-focal)
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    apt-get install -y --no-install-recommends \
+    apt_install \
       build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux
     install_ubuntu_libzfs
     ;;
   ubuntu-jammy)
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    apt-get install -y --no-install-recommends \
+    apt_install \
       build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux
     install_ubuntu_libzfs
     ;;
   ubuntu-questing)
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    apt-get install -y --no-install-recommends \
+    apt_install \
       build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux
     install_ubuntu_libzfs
     ;;

@@ -11,6 +11,9 @@ on:
 jobs:
   docker-build-test:
     runs-on: ubuntu-latest
+    env:
+      GIT_CONFIG_GLOBAL: /tmp/gitconfig
+      GIT_CONFIG_SYSTEM: /dev/null
     strategy:
       fail-fast: false
       matrix:
@@ -27,8 +30,9 @@ jobs:
             image: rockylinux:9
     name: ${{ matrix.target.name }}
     steps:
-      - name: Configure git default branch
-        run: git config --global init.defaultBranch main
+      - name: Configure git defaults
+        run: |
+          printf "[init]\n\tdefaultBranch = main\n" > "${GIT_CONFIG_GLOBAL}"
       - uses: actions/checkout@v4
       - name: Run build/test in container
         run: |

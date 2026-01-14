@@ -2,7 +2,6 @@
 # cython: language_level=3, c_string_type=unicode, c_string_encoding=default
 
 cimport nvpair
-import collections
 import numbers
 import cython
 from types cimport *
@@ -10,16 +9,65 @@ from libc.stdint cimport uintptr_t
 from libc.stdlib cimport malloc, free
 
 try:
-    from collections import Sequence
-except ImportError:
-    # >= py3.10 moved everything into top-level "abc" module
-    # https://docs.python.org/3.9/library/collections.html
     from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
 
 try:
     long
 except NameError:
     long = int
+
+cdef extern from *:
+    """
+    #ifndef PYZFS_TYPES_COMPATIBLE
+    #if defined(__GNUC__) || defined(__clang__)
+    #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
+    #else
+    #define PYZFS_TYPES_COMPATIBLE(expr, type) 0
+    #endif
+    #endif
+
+    static inline int pyzfs_nvpair_value_string(nvpair_t *pair, const char **out) {
+      if (PYZFS_TYPES_COMPATIBLE(&nvpair_value_string, int (*)(const nvpair_t *, const char **)) ||
+          PYZFS_TYPES_COMPATIBLE(&nvpair_value_string, int (*)(nvpair_t *, const char **))) {
+        return nvpair_value_string(pair, out);
+      }
+      return nvpair_value_string(pair, (char **)out);
+    }
+
+    static inline int pyzfs_nvpair_value_string_array(nvpair_t *pair, const char ***out, uint_t *len) {
+      if (PYZFS_TYPES_COMPATIBLE(&nvpair_value_string_array, int (*)(const nvpair_t *, const char ***, uint_t *)) ||
+          PYZFS_TYPES_COMPATIBLE(&nvpair_value_string_array, int (*)(nvpair_t *, const char ***, uint_t *))) {
+        return nvpair_value_string_array(pair, out, len);
+      }
+      return nvpair_value_string_array(pair, (char ***)out, len);
+    }
+
+    static inline int pyzfs_nvlist_add_string_array(
+        nvlist_t *nvl, const char *name, const char * const *arr, uint_t count) {
+      if (PYZFS_TYPES_COMPATIBLE(&nvlist_add_string_array,
+          int (*)(nvlist_t *, const char *, const char * const *, uint_t))) {
+        return nvlist_add_string_array(nvl, name, arr, count);
+      }
+      return nvlist_add_string_array(nvl, name, (char * const *)arr, count);
+    }
+
+    static inline int pyzfs_nvlist_add_nvlist_array(
+        nvlist_t *nvl, const char *name, const nvlist_t * const *arr, uint_t count) {
+      if (PYZFS_TYPES_COMPATIBLE(&nvlist_add_nvlist_array,
+          int (*)(nvlist_t *, const char *, const nvlist_t * const *, uint_t))) {
+        return nvlist_add_nvlist_array(nvl, name, arr, count);
+      }
+      return nvlist_add_nvlist_array(nvl, name, (nvlist_t **)arr, count);
+    }
+    """
+    int pyzfs_nvpair_value_string(nvpair.nvpair_t *, const char **)
+    int pyzfs_nvpair_value_string_array(nvpair.nvpair_t *, const char ***, nvpair.uint_t *)
+    int pyzfs_nvlist_add_string_array(
+        nvpair.nvlist_t *, const char *, const char * const *, nvpair.uint_t)
+    int pyzfs_nvlist_add_nvlist_array(
+        nvpair.nvlist_t *, const char *, const nvpair.nvlist_t * const *, nvpair.uint_t)
 
 
 @cython.internal
@@ -69,7 +117,7 @@ cdef class NVList(object):
         datatype = nvpair.nvpair_type(pair)
 
         if datatype == nvpair.DATA_TYPE_STRING:
-            nvpair.nvpair_value_string(pair, &cstr)
+            pyzfs_nvpair_value_string(pair, &cstr)
             return (<bytes>cstr).decode('utf-8')
 
         if datatype == nvpair.DATA_TYPE_BOOLEAN:
@@ -149,7 +197,7 @@ cdef class NVList(object):
             return [x for x in (<uint64_t *>carray)[:carraylen]]
 
         if datatype == nvpair.DATA_TYPE_STRING_ARRAY:
-            nvpair.nvpair_value_string_array(pair, <const char***>&carray, &carraylen)
+            pyzfs_nvpair_value_string_array(pair, <const char***>&carray, &carraylen)
             return [x for x in (<const char**>carray)[:carraylen]]
 
         if datatype == nvpair.DATA_TYPE_NVLIST:
@@ -265,7 +313,7 @@ cdef class NVList(object):
                 for idx, i in enumerate(value):
                     (<char**>carray)[idx] = i
 
-                nvpair.nvlist_add_string_array(
+                pyzfs_nvlist_add_string_array(
                     self.handle, key, <const char * const *>carray, len(value)
                 )
 
@@ -346,7 +394,7 @@ cdef class NVList(object):
                     cnvlist = <NVList>i
                     (<uintptr_t*>carray)[idx] = <uintptr_t>cnvlist.handle
 
-                nvpair.nvlist_add_nvlist_array(
+                pyzfs_nvlist_add_nvlist_array(
                     self.handle, key, <const nvpair.nvlist_t * const *>carray, len(value)
                 )
 

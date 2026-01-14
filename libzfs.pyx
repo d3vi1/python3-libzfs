@@ -39,6 +39,50 @@ cdef extern from *:
     #endif
     """
 
+IF HAVE_ZPOOL_GET_STATUS == 3:
+    cdef extern from *:
+        """
+        #ifndef PYZFS_TYPES_COMPATIBLE
+        #if defined(__GNUC__) || defined(__clang__)
+        #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
+        #else
+        #define PYZFS_TYPES_COMPATIBLE(expr, type) 0
+        #endif
+        #endif
+
+        static inline zpool_status_t pyzfs_zpool_get_status(
+            zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
+          if (PYZFS_TYPES_COMPATIBLE(&zpool_get_status,
+              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *))) {
+            return zpool_get_status(zhp, msg, err);
+          }
+          return zpool_get_status(zhp, (char **)msg, err);
+        }
+        """
+        zpool_status_t pyzfs_zpool_get_status(
+            libzfs.zpool_handle_t *, const char **, zfs.zpool_errata_t *)
+ELSE:
+    cdef extern from *:
+        """
+        #ifndef PYZFS_TYPES_COMPATIBLE
+        #if defined(__GNUC__) || defined(__clang__)
+        #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
+        #else
+        #define PYZFS_TYPES_COMPATIBLE(expr, type) 0
+        #endif
+        #endif
+
+        static inline zpool_status_t pyzfs_zpool_get_status(
+            zpool_handle_t *zhp, const char **msg) {
+          if (PYZFS_TYPES_COMPATIBLE(&zpool_get_status,
+              zpool_status_t (*)(zpool_handle_t *, const char **))) {
+            return zpool_get_status(zhp, msg);
+          }
+          return zpool_get_status(zhp, (char **)msg);
+        }
+        """
+        zpool_status_t pyzfs_zpool_get_status(libzfs.zpool_handle_t *, const char **)
+
 
 class DatasetType(enum.IntEnum):
     FILESYSTEM = zfs.ZFS_TYPE_FILESYSTEM
@@ -2865,15 +2909,12 @@ cdef class ZFSPool(object):
 
     property status_code:
         def __get__(self):
-            IF HAVE_ZPOOL_GET_STATUS_CONST:
-                cdef const char* msg_id
-            ELSE:
-                cdef char* msg_id
+            cdef const char* msg_id
             if self.handle != NULL:
                 IF HAVE_ZPOOL_GET_STATUS == 3:
-                    return PoolStatus(libzfs.zpool_get_status(self.handle, &msg_id, NULL))
+                    return PoolStatus(pyzfs_zpool_get_status(self.handle, &msg_id, NULL))
                 ELSE:
-                    return PoolStatus(libzfs.zpool_get_status(self.handle, &msg_id))
+                    return PoolStatus(pyzfs_zpool_get_status(self.handle, &msg_id))
 
     def __warning_statuses(self):
         return [
