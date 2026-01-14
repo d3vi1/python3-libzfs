@@ -77,10 +77,14 @@ ensure_zfs_header() {
   done
 
   if [[ ${use_openzfs_primary} -eq 1 && -n "${OPENZFS_SRC:-}" ]]; then
-    for extra in "${OPENZFS_SRC}/include" "${OPENZFS_SRC}/lib/libzfs" \
-      "${OPENZFS_SRC}/include/os/linux" "${OPENZFS_SRC}/include/os/linux/spl"; do
+    for extra in "${OPENZFS_SRC}/include" "${OPENZFS_SRC}/lib/libzfs"; do
       if [[ -d "${extra}" ]]; then
         export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
+      fi
+    done
+    for extra in "${OPENZFS_SRC}/include/os/linux" "${OPENZFS_SRC}/include/os/linux/spl"; do
+      if [[ -d "${extra}" ]]; then
+        export CPPFLAGS="${CPPFLAGS:-} -idirafter ${extra}"
       fi
     done
   fi
@@ -90,9 +94,25 @@ ensure_zfs_header() {
   elif [[ ${use_openzfs_primary} -eq 1 && -n "${OPENZFS_SRC:-}" ]]; then
     for extra in "${OPENZFS_SRC}/lib/libspl/include" "${OPENZFS_SRC}/lib/libspl/include/os/linux"; do
       if [[ -d "${extra}" ]]; then
-        export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
+        export CPPFLAGS="${CPPFLAGS:-} -idirafter ${extra}"
       fi
     done
+  fi
+
+  if [[ ! -e /usr/include/sys/abd_os.h && -e /usr/include/libzpool/abd_os.h ]]; then
+    mkdir -p /tmp/zfs-compat/sys
+    cat > /tmp/zfs-compat/sys/abd_os.h <<'EOF'
+#include <libzpool/abd_os.h>
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+  fi
+
+  if [[ ! -e /usr/include/sys/abd_impl_os.h && -e /usr/include/libzpool/abd_impl_os.h ]]; then
+    mkdir -p /tmp/zfs-compat/sys
+    cat > /tmp/zfs-compat/sys/abd_impl_os.h <<'EOF'
+#include <libzpool/abd_impl_os.h>
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
   fi
 
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
