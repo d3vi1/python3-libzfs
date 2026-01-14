@@ -61,7 +61,7 @@ ensure_zfs_header() {
     stdtypes_header=$(rpm -ql libzfs5-devel libzfs-devel zfs-devel libspl-devel 2>/dev/null \
       | grep -m1 '/sys/stdtypes.h$' || true)
   elif command -v dpkg >/dev/null 2>&1; then
-    stdtypes_header=$(dpkg -S "/sys/stdtypes.h" 2>/dev/null | head -n1 | awk -F': ' '{print $2}')
+    stdtypes_header=$(dpkg -S "/sys/stdtypes.h" 2>/dev/null | head -n1 | awk -F': ' '{print $2}' || true)
   fi
   if [[ -z "${stdtypes_header}" ]]; then
     stdtypes_header=$(find /usr/src /usr/include /usr/local/include \
@@ -104,7 +104,7 @@ EOF
       ioctl_any=$(rpm -ql libzfs5-devel libzfs-devel zfs-devel 2>/dev/null \
         | grep -m1 'zfs_ioctl.h$' || true)
     elif command -v dpkg >/dev/null 2>&1; then
-      ioctl_any=$(dpkg -S "zfs_ioctl.h" 2>/dev/null | head -n1 | awk -F': ' '{print $2}')
+      ioctl_any=$(dpkg -S "zfs_ioctl.h" 2>/dev/null | head -n1 | awk -F': ' '{print $2}' || true)
     fi
     if [[ -z "${ioctl_any}" ]]; then
       ioctl_any=$(find /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /usr/src \
