@@ -8,7 +8,23 @@ install_common() {
   python3 -m pip install --no-cache-dir cython
 }
 
+download_openzfs_headers() {
+  local version=$1
+  local tag="zfs-${version}"
+  local url="https://github.com/openzfs/zfs/archive/refs/tags/${tag}.tar.gz"
+
+  echo "==> Downloading OpenZFS headers ${tag}"
+  mkdir -p /tmp/openzfs-src
+  curl -fsSL "${url}" | tar -xz -C /tmp/openzfs-src --strip-components=1
+  mkdir -p /usr/local/include/openzfs
+  cp -R /tmp/openzfs-src/include/* /usr/local/include/openzfs/
+
+  export CPPFLAGS="-I/usr/local/include/openzfs -I/usr/local/include/openzfs/sys"
+}
+
 install_ubuntu_libzfs() {
+  apt-get install -y --no-install-recommends ca-certificates curl
+
   if apt-cache show libzfs-dev >/dev/null 2>&1; then
     apt-get install -y --no-install-recommends libzfs-dev libzfs5
     return
@@ -17,15 +33,36 @@ install_ubuntu_libzfs() {
     apt-get install -y --no-install-recommends libzfs4linux-dev libzfs4linux
     return
   fi
-  echo "No libzfs development package found for this Ubuntu release." >&2
-  exit 1
+
+  local ver
+  ver=$(dpkg-query -W -f='${Version}' zfsutils-linux | cut -d- -f1)
+  if [[ -z "${ver}" ]]; then
+    echo "No libzfs development package found and cannot determine OpenZFS version." >&2
+    exit 1
+  fi
+
+  download_openzfs_headers "${ver}"
 }
 
 install_rocky_libzfs() {
   local release_rpm=$1
   dnf -y install dnf-plugins-core ca-certificates curl
   dnf -y install "${release_rpm}"
-  dnf -y install libzfs libzfs-devel
+
+  if ! dnf -y install libzfs libzfs-devel; then
+    dnf -y install zfs zfs-devel
+  fi
+
+  if ! rpm -q libzfs-devel >/dev/null 2>&1 && ! rpm -q zfs-devel >/dev/null 2>&1; then
+    local ver
+    ver=$(rpm -q --qf '%{VERSION}' zfs 2>/dev/null || true)
+    if [[ -n "${ver}" ]]; then
+      download_openzfs_headers "${ver}"
+    else
+      echo "No libzfs development package found and cannot determine OpenZFS version." >&2
+      exit 1
+    fi
+  fi
 }
 
 echo "==> Installing dependencies for ${DISTRO}"
