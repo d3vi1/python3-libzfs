@@ -6926,6 +6926,7 @@ printf "%s\n" "$as_me: Checking nvpair_value_string constness" >&6;}
 PYZFS_NVPAIR_VALUE_STRING_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #if defined(__has_include)
 #if __has_include(<sys/nvpair.h>)
 #include <sys/nvpair.h>
@@ -6962,6 +6963,7 @@ printf "%s\n" "$as_me: Checking nvpair_value_string_array constness" >&6;}
 PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #if defined(__has_include)
 #if __has_include(<sys/nvpair.h>)
 #include <sys/nvpair.h>
@@ -6999,6 +7001,7 @@ printf "%s\n" "$as_me: Checking nvlist_add_string_array constness" >&6;}
 PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #if defined(__has_include)
 #if __has_include(<sys/nvpair.h>)
 #include <sys/nvpair.h>
@@ -7035,6 +7038,7 @@ printf "%s\n" "$as_me: Checking nvlist_add_nvlist_array constness" >&6;}
 PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <stddef.h>
 #if defined(__has_include)
 #if __has_include(<sys/nvpair.h>)
 #include <sys/nvpair.h>

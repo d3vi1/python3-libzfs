@@ -206,6 +206,14 @@ EOF
     export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
   fi
 
+  if [[ ! -e /usr/include/sys/varargs.h ]]; then
+    mkdir -p /tmp/zfs-compat/sys
+    cat > /tmp/zfs-compat/sys/varargs.h <<'EOF'
+#include <stdarg.h>
+EOF
+    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+  fi
+
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 }
 
