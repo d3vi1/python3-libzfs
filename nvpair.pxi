@@ -16,6 +16,11 @@ except ImportError:
     # https://docs.python.org/3.9/library/collections.html
     from collections.abc import Sequence
 
+try:
+    long
+except NameError:
+    long = int
+
 
 @cython.internal
 cdef class NVList(object):
