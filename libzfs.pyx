@@ -48,18 +48,17 @@ IF HAVE_ZPOOL_GET_STATUS == 3:
         #endif
         #endif
 
-        #ifndef PYZFS_TYPES_COMPATIBLE
-        #if defined(__GNUC__) || defined(__clang__)
-        #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
+        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        #define PYZFS_ZPOOL_GET_STATUS_CONST \
+          _Generic((zpool_get_status), \
+              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *): 1, default: 0)
         #else
-        #define PYZFS_TYPES_COMPATIBLE(expr, type) 0
-        #endif
+        #define PYZFS_ZPOOL_GET_STATUS_CONST 0
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
-          if (PYZFS_TYPES_COMPATIBLE(&zpool_get_status,
-              zpool_status_t (*)(zpool_handle_t *, const char **, zpool_errata_t *))) {
+          if (PYZFS_ZPOOL_GET_STATUS_CONST) {
             return zpool_get_status(zhp, msg, err);
           }
           return zpool_get_status(zhp, (char **)msg, err);
@@ -76,18 +75,17 @@ ELSE:
         #endif
         #endif
 
-        #ifndef PYZFS_TYPES_COMPATIBLE
-        #if defined(__GNUC__) || defined(__clang__)
-        #define PYZFS_TYPES_COMPATIBLE(expr, type) __builtin_types_compatible_p(__typeof__(expr), type)
+        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+        #define PYZFS_ZPOOL_GET_STATUS_CONST \
+          _Generic((zpool_get_status), \
+              zpool_status_t (*)(zpool_handle_t *, const char **): 1, default: 0)
         #else
-        #define PYZFS_TYPES_COMPATIBLE(expr, type) 0
-        #endif
+        #define PYZFS_ZPOOL_GET_STATUS_CONST 0
         #endif
 
         static inline zpool_status_t pyzfs_zpool_get_status(
             zpool_handle_t *zhp, const char **msg) {
-          if (PYZFS_TYPES_COMPATIBLE(&zpool_get_status,
-              zpool_status_t (*)(zpool_handle_t *, const char **))) {
+          if (PYZFS_ZPOOL_GET_STATUS_CONST) {
             return zpool_get_status(zhp, msg);
           }
           return zpool_get_status(zhp, (char **)msg);
