@@ -26,6 +26,8 @@ jobs:
             zfs_tag: zfs-2.2.9
     name: ${{ matrix.target.name }} (${{ matrix.target.zfs_tag }})
     steps:
+      - name: Configure git default branch
+        run: git config --global init.defaultBranch main
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

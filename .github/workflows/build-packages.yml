@@ -13,6 +13,8 @@ jobs:
       matrix: ${{ steps.prebuild.outputs.matrix }}
       uuid: ${{ steps.prebuild.outputs.uuid }}
     steps:
+      - name: Configure git default branch
+        run: git config --global init.defaultBranch main
       - name: Checkout
         uses: actions/checkout@v3
       

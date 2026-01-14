@@ -27,6 +27,8 @@ jobs:
             image: rockylinux:9
     name: ${{ matrix.target.name }}
     steps:
+      - name: Configure git default branch
+        run: git config --global init.defaultBranch main
       - uses: actions/checkout@v4
       - name: Run build/test in container
         run: |
