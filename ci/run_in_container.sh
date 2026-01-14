@@ -92,7 +92,7 @@ ensure_zfs_header() {
         export CPPFLAGS="${CPPFLAGS:-} -idirafter ${extra}"
       fi
     done
-    for extra in "${OPENZFS_SRC}/include/os/linux" "${OPENZFS_SRC}/include/os/linux/spl"; do
+    for extra in "${OPENZFS_SRC}/include/os/linux"; do
       if [[ -d "${extra}" ]]; then
         export CPPFLAGS="${CPPFLAGS:-} -idirafter ${extra}"
       fi
@@ -104,7 +104,7 @@ ensure_zfs_header() {
   elif [[ ${use_openzfs_primary} -eq 1 && -n "${OPENZFS_SRC:-}" ]]; then
     for extra in "${OPENZFS_SRC}/lib/libspl/include" "${OPENZFS_SRC}/lib/libspl/include/os/linux"; do
       if [[ -d "${extra}" ]]; then
-        export CPPFLAGS="${CPPFLAGS:-} -idirafter ${extra}"
+        export CPPFLAGS="${CPPFLAGS:-} -I${extra}"
       fi
     done
   fi
@@ -123,23 +123,6 @@ EOF
 #include <libzpool/abd_impl_os.h>
 EOF
     export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
-  fi
-
-  if [[ ${use_openzfs_primary} -eq 1 ]]; then
-    mkdir -p /tmp/zfs-compat
-    cat > /tmp/zfs-compat/zfs_compat.h <<'EOF'
-#ifndef ZFS_COMPAT_HEADER_H
-#define ZFS_COMPAT_HEADER_H
-#include <stdint.h>
-#ifndef B_FALSE
-typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
-#endif
-#ifndef hrtime_t
-typedef int64_t hrtime_t;
-#endif
-#endif
-EOF
-    export CPPFLAGS="${CPPFLAGS:-} -include /tmp/zfs-compat/zfs_compat.h"
   fi
 
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
