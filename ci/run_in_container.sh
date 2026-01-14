@@ -126,11 +126,10 @@ EOF
   fi
 
   if [[ ${use_openzfs_primary} -eq 1 ]]; then
-    mkdir -p /tmp/zfs-compat/sys
-    cat > /tmp/zfs-compat/sys/types.h <<'EOF'
-#ifndef ZFS_COMPAT_TYPES_H
-#define ZFS_COMPAT_TYPES_H
-#include_next <sys/types.h>
+    mkdir -p /tmp/zfs-compat
+    cat > /tmp/zfs-compat/zfs_compat.h <<'EOF'
+#ifndef ZFS_COMPAT_HEADER_H
+#define ZFS_COMPAT_HEADER_H
 #include <stdint.h>
 #ifndef B_FALSE
 typedef enum { B_FALSE = 0, B_TRUE = 1 } boolean_t;
@@ -140,7 +139,7 @@ typedef int64_t hrtime_t;
 #endif
 #endif
 EOF
-    export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+    export CPPFLAGS="${CPPFLAGS:-} -include /tmp/zfs-compat/zfs_compat.h"
   fi
 
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
