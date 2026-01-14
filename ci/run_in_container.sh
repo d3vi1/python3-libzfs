@@ -52,6 +52,13 @@ ensure_zfs_header() {
     fi
   fi
 
+  local stdtypes_header
+  stdtypes_header=$(find /usr/src /usr/include /usr/local/include \
+    -path "*/sys/stdtypes.h" -print -quit 2>/dev/null || true)
+  if [[ -n "${stdtypes_header}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} -I${stdtypes_header%/sys/stdtypes.h}"
+  fi
+
   local extra
   for extra in /usr/include/libspl /usr/local/include/libspl /usr/include/libzfs /usr/local/include/libzfs; do
     if [[ -d "${extra}" ]]; then
@@ -77,6 +84,19 @@ EOF
 #include <libzpool/abd_impl_os.h>
 EOF
     export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+  fi
+
+  if [[ ! -e /usr/include/sys/zfs_ioctl.h ]]; then
+    local ioctl_any
+    ioctl_any=$(find /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /usr/src \
+      -name "zfs_ioctl.h" -print -quit 2>/dev/null || true)
+    if [[ -n "${ioctl_any}" ]]; then
+      mkdir -p /tmp/zfs-compat/sys
+      cat > /tmp/zfs-compat/sys/zfs_ioctl.h <<EOF
+#include "${ioctl_any}"
+EOF
+      export CPPFLAGS="${CPPFLAGS:-} -I/tmp/zfs-compat"
+    fi
   fi
 
   export CPPFLAGS="${CPPFLAGS:-} -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
