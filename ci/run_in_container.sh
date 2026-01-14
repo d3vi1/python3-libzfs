@@ -100,6 +100,9 @@ install_ubuntu_libzfs() {
       return
     fi
   done
+  if apt_install zfs-dkms; then
+    return
+  fi
   echo "No libzfs development package found for ${DISTRO}." >&2
   exit 1
 }
