@@ -221,10 +221,18 @@ def _preprocess_cython(text, defs):
         while stack and indent < stack[-1]['indent']:
             stack.pop()
 
+        if stack and stack[-1]['strip'] is None and indent > stack[-1]['indent']:
+            stack[-1]['strip'] = indent - stack[-1]['indent']
+
         if stripped.startswith('IF ') and stripped.endswith(':'):
             expr = stripped[3:-1].strip()
             value = bool(eval(expr, {'__builtins__': {}}, defs))
-            stack.append({'indent': indent, 'active': value, 'matched': value})
+            stack.append({
+                'indent': indent,
+                'active': value,
+                'matched': value,
+                'strip': None,
+            })
             continue
         if stripped.startswith('ELIF ') and stripped.endswith(':'):
             if not stack:
@@ -248,7 +256,11 @@ def _preprocess_cython(text, defs):
 
         if not is_active():
             continue
-        out_lines.append(line)
+        strip_total = sum(frame['strip'] or 0 for frame in stack)
+        if strip_total:
+            out_lines.append(line[strip_total:])
+        else:
+            out_lines.append(line)
 
     return '\n'.join(out_lines) + ('\n' if text.endswith('\n') else '')
 
