@@ -217,9 +217,14 @@ def _preprocess_cython(text, defs):
                 out_lines.append(line)
             continue
         indent = len(line) - len(stripped)
-
-        while stack and indent < stack[-1]['indent']:
-            stack.pop()
+        is_elif = stripped.startswith('ELIF ') and stripped.endswith(':')
+        is_else = stripped == 'ELSE:'
+        if is_elif or is_else:
+            while stack and indent < stack[-1]['indent']:
+                stack.pop()
+        else:
+            while stack and indent <= stack[-1]['indent']:
+                stack.pop()
 
         if stack and stack[-1]['strip'] is None and indent > stack[-1]['indent']:
             stack[-1]['strip'] = indent - stack[-1]['indent']
@@ -234,7 +239,7 @@ def _preprocess_cython(text, defs):
                 'strip': None,
             })
             continue
-        if stripped.startswith('ELIF ') and stripped.endswith(':'):
+        if is_elif:
             if not stack:
                 raise ValueError('ELIF without IF')
             frame = stack[-1]
@@ -246,7 +251,7 @@ def _preprocess_cython(text, defs):
                 frame['active'] = value
                 frame['matched'] = value
             continue
-        if stripped == 'ELSE:':
+        if is_else:
             if not stack:
                 raise ValueError('ELSE without IF')
             frame = stack[-1]
