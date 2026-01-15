@@ -1,3 +1,18 @@
-## Py-libzfs 1.0.0-1
+## Unreleased
 
-* Stable Release
+* trim duplicate compiler flags and include paths in builds
+* split container build steps with dependency caching and quieter configure
+* fix packaging/header detection for distro-provided OpenZFS headers
+* ubuntu-questing: depend on zfsutils-linux
+
+## Unreleased
+
+* docker CI now builds and uploads deb/rpm package artifacts
+
+## Py-libzfs 2.2.1-7
+
+* ubuntu-questing: depend on zfsutils-linux
+
+## Py-libzfs 2.2.1-6
+
+* build for new repos

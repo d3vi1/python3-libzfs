@@ -1,0 +1,11 @@
+python3-libzfs (2.2.1-7questing) questing; urgency=medium
+
+  * depend on zfsutils-linux for Ubuntu 25.10
+
+ -- Brett Kelly <bkelly@45drives.com>  Thu, 15 Jan 2026 12:00:00 -0400
+
+python3-libzfs (2.2.1-6questing) questing; urgency=medium
+
+  * build for questing
+
+ -- Brett Kelly <bkelly@45drives.com>  Tue, 14 Jan 2026 12:15:00 -0400
