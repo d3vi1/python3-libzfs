@@ -45,7 +45,7 @@ jobs:
             .cache/apt-lists
             .cache/dnf
           key: ${{ runner.os }}-${{ matrix.target.name }}-pkg-${{ hashFiles('ci/run_in_container.sh') }}
-      - name: Run build/test in container
+      - name: Start container
         run: |
           docker create --name "build-${{ matrix.target.name }}" \
             -v "${{ github.workspace }}:/work" \
@@ -56,9 +56,12 @@ jobs:
             "${{ matrix.target.image }}" \
             bash -lc "sleep infinity"
           docker start "build-${{ matrix.target.name }}"
-          docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} setup"
-          docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} build"
-          docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} package"
+      - name: Install dependencies
+        run: docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} setup"
+      - name: Configure and build
+        run: docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} build"
+      - name: Package artifacts
+        run: docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} package"
       - name: Cleanup container
         if: always()
         run: docker rm -f "build-${{ matrix.target.name }}"
