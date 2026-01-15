@@ -347,6 +347,32 @@ report_compat_stubs() {
   fi
 }
 
+dedupe_cppflags() {
+  local -a args result
+  local -A seen
+  read -r -a args <<< "${CPPFLAGS:-}"
+  for ((i=0; i<${#args[@]}; i++)); do
+    local arg="${args[i]}"
+    if [[ "${arg}" == "-I" || "${arg}" == "-include" || "${arg}" == "-isystem" ]]; then
+      if ((i + 1 < ${#args[@]})); then
+        local key="${arg} ${args[i + 1]}"
+        if [[ -z "${seen[${key}]+x}" ]]; then
+          result+=("${arg}" "${args[i + 1]}")
+          seen["${key}"]=1
+        fi
+        ((i++))
+        continue
+      fi
+    fi
+    if [[ -z "${seen[${arg}]+x}" ]]; then
+      result+=("${arg}")
+      seen["${arg}"]=1
+    fi
+  done
+  CPPFLAGS="${result[*]}"
+  export CPPFLAGS
+}
+
 configure_quiet_flag() {
   if ./configure --help 2>/dev/null | grep -q -- '--quiet'; then
     echo "--quiet"
@@ -580,6 +606,7 @@ case "${STEP}" in
     add_pkg_config_cppflags
     ensure_zfs_header
     report_compat_stubs
+    dedupe_cppflags
     echo "==> CPPFLAGS=${CPPFLAGS:-}"
     if ! CPPFLAGS="${CPPFLAGS:-}" run_configure; then
       echo "configure failed; tailing config.log" >&2
@@ -605,6 +632,7 @@ PY
     add_pkg_config_cppflags
     ensure_zfs_header
     report_compat_stubs
+    dedupe_cppflags
     echo "==> CPPFLAGS=${CPPFLAGS:-}"
     if ! CPPFLAGS="${CPPFLAGS:-}" run_configure; then
       echo "configure failed; tailing config.log" >&2
@@ -615,7 +643,6 @@ PY
       tail -n 200 config.log || true
       exit 1
     fi
-    export CPPFLAGS=""
     if python3 - <<'PY' >/dev/null 2>&1
 import sys
 raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
