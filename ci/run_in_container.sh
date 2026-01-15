@@ -166,6 +166,7 @@ PY
   rm -f "${pkgroot}/debian/control.j2"
   chmod +x "${pkgroot}/debian/rules"
 
+  export PYZFS_CPPFLAGS="${CPPFLAGS:-}"
   local dpkg_flags=(-us -uc -b)
   if [[ "${DISTRO}" == "ubuntu-focal" ]]; then
     dpkg_flags+=(-d)
