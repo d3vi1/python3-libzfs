@@ -9,7 +9,7 @@ apt_install() {
 }
 
 apt_has_pkg() {
-  apt-cache show "$1" >/dev/null 2>&1
+  apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"
 }
 
 enable_dpkg_docs() {
@@ -300,7 +300,7 @@ ensure_ubuntu_runtime_libs() {
   local lib
   for lib in libzfs libzfs_core libnvpair libuutil; do
     if ! find /lib /usr/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu \
-      -name "${lib}.so*" -o -name "${lib}*linux.so*" -print -quit 2>/dev/null | grep -q .; then
+      \( -name "${lib}.so*" -o -name "${lib}*linux.so*" \) -print -quit 2>/dev/null | grep -q .; then
       missing=1
     fi
   done
@@ -343,7 +343,7 @@ ensure_ubuntu_runtime_libs() {
   local still_missing=0
   for lib in libzfs libzfs_core libnvpair libuutil; do
     if ! find /lib /usr/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu \
-      -name "${lib}.so*" -o -name "${lib}*linux.so*" -print -quit 2>/dev/null | grep -q .; then
+      \( -name "${lib}.so*" -o -name "${lib}*linux.so*" \) -print -quit 2>/dev/null | grep -q .; then
       still_missing=1
     fi
   done
