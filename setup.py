@@ -175,6 +175,26 @@ def _dedupe_list(values):
     return result
 
 
+def _split_include_dirs(args):
+    include_dirs = []
+    remaining = []
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg.startswith('-I') and arg != '-I':
+            include_dirs.append(arg[2:])
+        elif arg == '-I':
+            if i + 1 < len(args):
+                include_dirs.append(args[i + 1])
+                i += 1
+            else:
+                remaining.append(arg)
+        else:
+            remaining.append(arg)
+        i += 1
+    return include_dirs, remaining
+
+
 class BuildExt(build_ext):
     def build_extensions(self):
         if self.compiler:
@@ -208,6 +228,8 @@ extra_compile_args = _dedupe_compile_args(extra_compile_args)
 base_compile_flags = _base_compile_flags()
 if base_compile_flags:
     extra_compile_args = [arg for arg in extra_compile_args if arg not in base_compile_flags]
+include_dirs, extra_compile_args = _split_include_dirs(extra_compile_args)
+include_dirs = _dedupe_list(include_dirs)
 define_macros = []
 
 def _write_config_header(root):
@@ -393,6 +415,7 @@ setup(
             cython_include_dirs=cython_include_dirs,
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
+            include_dirs=include_dirs,
         )
     ]
 )
