@@ -1525,13 +1525,13 @@ CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
 		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
+		#if __has_include(<libnvpair.h>)
 		#include <libnvpair.h>
+		#elif __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
 		#endif
 		#else
-		#include <sys/nvpair.h>
+		#include <libnvpair.h>
 		#endif],
 		[
 			const char *value = NULL;
@@ -1547,13 +1547,13 @@ AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST, 0)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
 		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
+		#if __has_include(<libnvpair.h>)
 		#include <libnvpair.h>
+		#elif __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
 		#endif
 		#else
-		#include <sys/nvpair.h>
+		#include <libnvpair.h>
 		#endif],
 		[
 			const char **value = NULL;
@@ -1570,13 +1570,13 @@ AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 0)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
 		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
+		#if __has_include(<libnvpair.h>)
 		#include <libnvpair.h>
+		#elif __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
 		#endif
 		#else
-		#include <sys/nvpair.h>
+		#include <libnvpair.h>
 		#endif],
 		[
 			const char *values[] = { NULL };
@@ -1592,13 +1592,13 @@ AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 0)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
 		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
+		#if __has_include(<libnvpair.h>)
 		#include <libnvpair.h>
+		#elif __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
 		#endif
 		#else
-		#include <sys/nvpair.h>
+		#include <libnvpair.h>
 		#endif],
 		[
 			const nvlist_t *lists[] = { NULL };

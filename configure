@@ -7000,13 +7000,13 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
 #if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if __has_include(<libnvpair.h>)
 #include <libnvpair.h>
+#elif __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
 #endif
 #else
-#include <sys/nvpair.h>
+#include <libnvpair.h>
 #endif
 int
 main (void)
@@ -7037,13 +7037,13 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
 #if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if __has_include(<libnvpair.h>)
 #include <libnvpair.h>
+#elif __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
 #endif
 #else
-#include <sys/nvpair.h>
+#include <libnvpair.h>
 #endif
 int
 main (void)
@@ -7075,13 +7075,13 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
 #if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if __has_include(<libnvpair.h>)
 #include <libnvpair.h>
+#elif __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
 #endif
 #else
-#include <sys/nvpair.h>
+#include <libnvpair.h>
 #endif
 int
 main (void)
@@ -7112,13 +7112,13 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
 #if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if __has_include(<libnvpair.h>)
 #include <libnvpair.h>
+#elif __has_include(<sys/nvpair.h>)
+#include <sys/nvpair.h>
 #endif
 #else
-#include <sys/nvpair.h>
+#include <libnvpair.h>
 #endif
 int
 main (void)
