@@ -53,7 +53,40 @@ build_deb_package() {
 
   mkdir -p "${pkgroot}/debian"
   cp -a "/work/packaging/${DISTRO}/." "${pkgroot}/debian/"
-  render_template "/work/packaging/${DISTRO}/control.j2" "${pkgroot}/debian/control" "${DISTRO}"
+  python3 - <<'PY' "${DISTRO}" "${pkgroot}/debian/control"
+import json
+import sys
+from pathlib import Path
+
+os_name = sys.argv[1]
+output = Path(sys.argv[2])
+
+with Path("/work/manifest.json").open("r") as handle:
+    manifest = json.load(handle)
+
+deps = manifest.get("dependencies", {}).get("ubuntu", {}).get(
+    os_name, manifest.get("dependencies", {}).get("ubuntu_common", [])
+)
+
+lines = [
+    f"Source: {manifest['name']}",
+    "Section: utils",
+    "Priority: optional",
+    f"Maintainer: {manifest['author']}",
+    "Build-Depends: debhelper-compat (= 13), python3-all, python3-setuptools, dh-python",
+    "Standards-Version: 4.4.1",
+    "X-Python3-Version: >= 3.6",
+    f"Homepage: {manifest['git_url']}",
+    f"Vcs-Git: {manifest['git_url']}",
+    "",
+    f"Package: {manifest['name']}",
+    f"Architecture: {manifest['architecture']['ubuntu']}",
+    f"Depends: {', '.join(deps)}",
+    f"Description: {manifest['description']}",
+    "",
+]
+output.write_text("\n".join(lines))
+PY
   rm -f "${pkgroot}/debian/control.j2"
   chmod +x "${pkgroot}/debian/rules"
 
