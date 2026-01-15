@@ -6,9 +6,14 @@ on:
     tags:
       - 'v*.*.*'
   workflow_dispatch:
+    inputs:
+      runner:
+        description: "Runner label to use for manual runs"
+        required: false
+        default: "ubuntu-latest"
 jobs:
   prebuild:
-    runs-on: buildinator-group
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner || 'buildinator-group' }}
     outputs:
       manifest: ${{ steps.prebuild.outputs.manifest }}
       matrix: ${{ steps.prebuild.outputs.matrix }}
@@ -25,7 +30,7 @@ jobs:
   
   build:
     needs: prebuild
-    runs-on: buildinator-group
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner || 'buildinator-group' }}
     strategy:
       matrix:
         build: ${{ fromJSON(needs.prebuild.outputs.matrix).include }}
@@ -41,7 +46,7 @@ jobs:
     needs:
       - prebuild
       - build
-    runs-on: buildinator-group
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner || 'buildinator-group' }}
     steps:
       - name: Run sign playbook
         uses: 45drives/actions/ansible-playbook@main
@@ -61,7 +66,7 @@ jobs:
       - prebuild
       - build
       - sign
-    runs-on: buildinator-group
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner || 'buildinator-group' }}
     steps:
       - id: push_local
         name: Push packages into local repository
@@ -75,7 +80,7 @@ jobs:
       - build
       - sign
       - update_repositories
-    runs-on: buildinator-group
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner || 'buildinator-group' }}
     steps:
       - id: push_remote
         name: Sync local repository with remote repository
