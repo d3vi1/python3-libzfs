@@ -806,9 +806,10 @@ cdef class ZFS(object):
                 }
 
         if retrieve_children:
-            ZFS.__iterate_filesystems(
-                handle, 0, cython.cast(libzfs.zfs_iter_f, ZFS.__dataset_handles), <void*>child_data
-            )
+            with gil:
+                ZFS.__iterate_filesystems(
+                    handle, 0, cython.cast(libzfs.zfs_iter_f, ZFS.__dataset_handles), <void*>child_data
+                )
 
         with gil:
             data[name] = {}
@@ -890,12 +891,11 @@ cdef class ZFS(object):
 
             with nogil:
                 handle = libzfs.zfs_open(self.handle, c_name, zfs.ZFS_TYPE_FILESYSTEM | zfs.ZFS_TYPE_VOLUME)
-                if handle == NULL:
-                    # It just means that the dataset in question does not exist
-                    # and it's okay to continue checking the next one
-                    continue
-                else:
-                    ZFS.__dataset_handles(handle, <void*>dataset)
+            if handle == NULL:
+                # It just means that the dataset in question does not exist
+                # and it's okay to continue checking the next one
+                continue
+            ZFS.__dataset_handles(handle, <void*>dataset)
 
             if len(dataset) > 1:
                 yield dataset[1][ds_name]
@@ -926,9 +926,10 @@ cdef class ZFS(object):
                 return 0
 
         libzfs.libzfs_add_handle(cb, handle)
-        ZFS.__iterate_filesystems(
-            handle, 0, cython.cast(libzfs.zfs_iter_f, ZFS.__retrieve_mountable_datasets_handles), cb
-        )
+        with gil:
+            ZFS.__iterate_filesystems(
+                handle, 0, cython.cast(libzfs.zfs_iter_f, ZFS.__retrieve_mountable_datasets_handles), cb
+            )
 
     @staticmethod
     cdef int mount_dataset(libzfs.zfs_handle_t *zhp, void *arg) nogil:
@@ -1159,17 +1160,18 @@ cdef class ZFS(object):
         cdef boolean_t close_handle, recursive, is_dataset
 
         is_dataset = libzfs.zfs_get_type(handle) != zfs.ZFS_TYPE_SNAPSHOT
-        ZFS.__snapshot_details(handle, arg)
         with gil:
+            ZFS.__snapshot_details(handle, arg)
             snap_list = <object> arg
             close_handle = snap_list[0]['close_handle']
             recursive = snap_list[0]['recursive']
 
         if is_dataset:
             if recursive:
-                ZFS.__iterate_filesystems(
-                    handle, 0, cython.cast(libzfs.zfs_iter_f, ZFS.__datasets_snapshots), arg
-                )
+                with gil:
+                    ZFS.__iterate_filesystems(
+                        handle, 0, cython.cast(libzfs.zfs_iter_f, ZFS.__datasets_snapshots), arg
+                    )
             if close_handle:
                 libzfs.zfs_close(handle)
 
@@ -1215,11 +1217,14 @@ cdef class ZFS(object):
             snap_list[0]['pool'] = dataset.split('/', 1)[0]
 
             with nogil:
-                handle = libzfs.zfs_open(global_handle, c_name,
-                                         zfs.ZFS_TYPE_FILESYSTEM | zfs.ZFS_TYPE_VOLUME | zfs.ZFS_TYPE_SNAPSHOT)
-                if handle == NULL:
-                    continue
-                ZFS.__datasets_snapshots(handle, <void*>snap_list)
+                handle = libzfs.zfs_open(
+                    global_handle,
+                    c_name,
+                    zfs.ZFS_TYPE_FILESYSTEM | zfs.ZFS_TYPE_VOLUME | zfs.ZFS_TYPE_SNAPSHOT
+                )
+            if handle == NULL:
+                continue
+            ZFS.__datasets_snapshots(handle, <void*>snap_list)
 
         return snap_list[1:]
 
@@ -3649,16 +3654,17 @@ cdef class ZFSResource(ZFSObject):
                 alloc_failed = 1
             else:
                 iter.alloc = 128
-                ZFS.__iterate_dependents(
-                    self.handle,
-                    0,
-                    recursion,
-                    cython.cast(libzfs.zfs_iter_f, ZFSResource.__iterate),
-                    <void*>&iter
-                )
 
         if alloc_failed:
             raise MemoryError()
+
+        ZFS.__iterate_dependents(
+            self.handle,
+            0,
+            recursion,
+            cython.cast(libzfs.zfs_iter_f, ZFSResource.__iterate),
+            <void*>&iter
+        )
 
         try:
             if iter.error:
@@ -3779,19 +3785,17 @@ cdef class ZFSDataset(ZFSResource):
             snap_config = <object> arg
             spec_orig = snap_config['snapshot_specification']
 
-        err = ZFS.__iterate_snapspec(
-            handle, 0, spec_orig, cython.cast(libzfs.zfs_iter_f, ZFSDataset.__snapshots_callback), arg
-        )
-
         with gil:
+            err = ZFS.__iterate_snapspec(
+                handle, 0, spec_orig, cython.cast(libzfs.zfs_iter_f, ZFSDataset.__snapshots_callback), arg
+            )
             if err not in (0, py_errno.ENOENT):
                 snap_config['failure'] = True
             else:
                 if snap_config['recursive']:
-                    with nogil:
-                        err = ZFS.__iterate_filesystems(
-                            handle, 0, cython.cast(libzfs.zfs_iter_f, ZFSDataset.__gather_snapshots), arg
-                        )
+                    err = ZFS.__iterate_filesystems(
+                        handle, 0, cython.cast(libzfs.zfs_iter_f, ZFSDataset.__gather_snapshots), arg
+                    )
                     if err:
                         snap_config['failure'] = True
 
@@ -3843,8 +3847,7 @@ cdef class ZFSDataset(ZFSResource):
         if handle == NULL:
             raise ZFSException(py_errno.EFAULT, f'Unable to open zfs handle for {name!r} dataset')
 
-        with nogil:
-            ZFSDataset.__gather_snapshots(handle, <void*>snap_config)
+        ZFSDataset.__gather_snapshots(handle, <void*>snap_config)
 
         if snap_config['failure']:
             raise self.root.get_error()

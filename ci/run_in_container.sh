@@ -12,6 +12,38 @@ apt_has_pkg() {
   apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"
 }
 
+enable_ubuntu_universe() {
+  local list
+  local updated=0
+  for list in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+    if [[ ! -f "${list}" ]]; then
+      continue
+    fi
+    if grep -qE '^[^#]*\buniverse\b' "${list}"; then
+      continue
+    fi
+    if grep -qE '^[^#]*\bmain\b' "${list}"; then
+      sed -i -E '/^[^#]*\bmain\b/ { /\buniverse\b/! s/$/ universe/ }' "${list}"
+      updated=1
+    fi
+  done
+  for list in /etc/apt/sources.list.d/*.sources; do
+    if [[ ! -f "${list}" ]]; then
+      continue
+    fi
+    if grep -qE '^Components:.*\buniverse\b' "${list}"; then
+      continue
+    fi
+    if grep -qE '^Components:.*\bmain\b' "${list}"; then
+      sed -i -E '/^Components:/ { /\buniverse\b/! s/$/ universe/ }' "${list}"
+      updated=1
+    fi
+  done
+  if [[ "${updated}" -eq 1 ]]; then
+    apt-get update
+  fi
+}
+
 enable_dpkg_docs() {
   local cfg
   for cfg in /etc/dpkg/dpkg.cfg.d/excludes /etc/dpkg/dpkg.cfg.d/docker; do
@@ -295,6 +327,26 @@ add_pkg_config_cppflags() {
   fi
 }
 
+ensure_config_py() {
+  if [[ -f config.py ]]; then
+    return
+  fi
+
+  echo "==> Generating config.py"
+  add_pkg_config_cppflags
+  ensure_zfs_header
+  echo "==> CPPFLAGS=${CPPFLAGS:-}"
+  if ! ./configure; then
+    echo "configure failed; tailing config.log" >&2
+    if [[ -f config.log ]]; then
+      grep -n "error:" config.log || true
+      grep -n "zfs.h" config.log || true
+    fi
+    tail -n 200 config.log || true
+    exit 1
+  fi
+}
+
 ensure_ubuntu_runtime_libs() {
   local missing=0
   local lib
@@ -355,12 +407,7 @@ ensure_ubuntu_runtime_libs() {
 
 install_ubuntu_libzfs() {
   apt_install ca-certificates
-
-  if ! grep -Rqs "^deb .* universe" /etc/apt/sources.list /etc/apt/sources.list.d; then
-    apt_install software-properties-common
-    add-apt-repository -y universe || true
-    apt-get update
-  fi
+  enable_ubuntu_universe
 
   local pkg
   for pkg in \
@@ -484,18 +531,16 @@ PY
     ;;
   package)
     echo "==> Package"
+    ensure_config_py
     if python3 - <<'PY' >/dev/null 2>&1
 import sys
 raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
 PY
     then
       ensure_python_build
-      if PYTHONWARNINGS=ignore::setuptools.SetuptoolsDeprecationWarning \
-        python3 -m build --no-isolation --sdist --wheel; then
-        exit 0
-      fi
+      python3 -m build --no-isolation --sdist --wheel
+      exit 0
     fi
-    PYTHONWARNINGS=ignore::setuptools.SetuptoolsDeprecationWarning \
-      python3 setup.py sdist bdist_wheel
+    python3 setup.py sdist bdist_wheel
     ;;
 esac
