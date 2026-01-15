@@ -3,6 +3,10 @@ set -euo pipefail
 
 DISTRO=${1:?distro name required}
 
+apt_update() {
+  apt-get -o Acquire::Retries=3 update
+}
+
 install_common() {
   local pip_args=(--no-cache-dir)
   export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -327,10 +331,10 @@ echo "==> Installing dependencies for ${DISTRO}"
 case "${DISTRO}" in
   ubuntu-focal)
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update
+    apt_update
     apt-get install -y --no-install-recommends \
       build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux \
-      debhelper dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
+      debhelper debhelper-compat dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
     if apt-cache policy python3-cython 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"; then
       apt-get install -y --no-install-recommends python3-cython
     fi
@@ -338,10 +342,10 @@ case "${DISTRO}" in
     ;;
   ubuntu-jammy)
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update
+    apt_update
     apt-get install -y --no-install-recommends \
       build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux \
-      debhelper dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
+      debhelper debhelper-compat dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
     if apt-cache policy python3-cython 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"; then
       apt-get install -y --no-install-recommends python3-cython
     fi
@@ -349,10 +353,10 @@ case "${DISTRO}" in
     ;;
   ubuntu-questing)
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update
+    apt_update
     apt-get install -y --no-install-recommends \
       build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux \
-      debhelper dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
+      debhelper debhelper-compat dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
     if apt-cache policy python3-cython 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"; then
       apt-get install -y --no-install-recommends python3-cython
     fi
