@@ -602,10 +602,19 @@ PY
     ;;
   package)
     echo "==> Package"
-    ensure_config_py
     add_pkg_config_cppflags
     ensure_zfs_header
     report_compat_stubs
+    echo "==> CPPFLAGS=${CPPFLAGS:-}"
+    if ! CPPFLAGS="${CPPFLAGS:-}" run_configure; then
+      echo "configure failed; tailing config.log" >&2
+      if [[ -f config.log ]]; then
+        grep -n "error:" config.log || true
+        grep -n "zfs.h" config.log || true
+      fi
+      tail -n 200 config.log || true
+      exit 1
+    fi
     export CPPFLAGS=""
     if python3 - <<'PY' >/dev/null 2>&1
 import sys
