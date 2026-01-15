@@ -532,6 +532,8 @@ PY
   package)
     echo "==> Package"
     ensure_config_py
+    add_pkg_config_cppflags
+    ensure_zfs_header
     if python3 - <<'PY' >/dev/null 2>&1
 import sys
 raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
