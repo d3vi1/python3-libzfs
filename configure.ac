@@ -40,7 +40,7 @@ case "${host_os}" in
 		;;
 esac
 
-CFLAGS="-DCYTHON_FALLTHROUGH"
+CFLAGS="-DCYTHON_FALLTHROUGH=((void)0)"
 LIBS="-lzfs -lnvpair -lzfs_core -luutil"
 
 if [[ "${build_freebsd}" = "yes" ]]; then
@@ -136,6 +136,7 @@ SECTION_TITLE([RUNNING TESTS ON zfs.h HEADER])
 AC_CHECK_HEADERS([sys/types.h], [], [AC_MSG_ERROR(A working sys/types header is required)])
 AC_CHECK_HEADERS([sys/fs/zfs.h], [], [AC_MSG_ERROR(A working zfs header is required)],[
 	#include <sys/types.h>
+	#include <stdint.h>
 ])
 
 
@@ -163,7 +164,9 @@ dnl Check zfs_prop_valid_for_type signature
 AC_MSG_NOTICE([Checking signature of zfs_prop_valid_for_type in zfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zfs_prop_valid_for_type(0, ZFS_TYPE_VOLUME, 0)
 		],
@@ -178,7 +181,9 @@ dnl Checking if VDEV_AUX_ASHIFT_TOO_BIG enum exists
 AC_MSG_NOTICE([Checking existence of VDEV_AUX_ASHIFT_TOO_BIG enum in zfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			VDEV_AUX_ASHIFT_TOO_BIG == VDEV_AUX_ASHIFT_TOO_BIG /* ; */
 		]
@@ -193,7 +198,9 @@ dnl Checking zpool_errata_t existence
 AC_MSG_NOTICE([Checking existence of zpool_errata_t])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zpool_errata_t errata;
 		]
@@ -208,7 +215,9 @@ dnl Checking typedef pool_scrub_cmd_t in zfs header
 AC_MSG_NOTICE([Checking typedef pool_scrub_cmt_t in zfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			int i = sizeof(pool_scrub_cmd_t);
 			i = i; /* ; */
@@ -221,7 +230,9 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 
 AC_MSG_NOTICE([Verifying existence of zpool_rewind_policy_t])
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zpool_rewind_policy_t policy;
 		]
@@ -233,7 +244,9 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 
 AC_MSG_NOTICE([Verifying existence of zpool_load_policy_t])
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 			zpool_load_policy_t policy;
 		]
@@ -266,7 +279,8 @@ dnl Let's default HAVE_ZPOOL_READ_LABEL_PARAMS value to 0
 AC_SUBST(HAVE_ZPOOL_READ_LABEL_PARAMS, 0)
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzutil.h>],
+		[#include <stddef.h>
+#include <libzutil.h>],
 		[
 			zpool_read_label(0, NULL, NULL) /* ; */
 		]
@@ -283,14 +297,16 @@ AC_MSG_NOTICE([Checking existence of zpool_search_import in libzutil.h header])
 AC_SUBST(HAVE_ZPOOL_SEARCH_IMPORT_PARAMS, 0)
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzutil.h>],
+		[#include <stddef.h>
+#include <libzutil.h>],
 		[
 			zpool_search_import(NULL, NULL, NULL);
 		]
 	)],
 	[AC_SUBST(HAVE_ZPOOL_SEARCH_IMPORT_LIBZUTIL, 1) AC_SUBST(HAVE_ZPOOL_SEARCH_IMPORT_PARAMS, 3) AC_MSG_NOTICE(OK)],
 	[AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzutil.h>],
+		[#include <stddef.h>
+#include <libzutil.h>],
 		[
 			zpool_search_import(NULL, NULL);
 		]
@@ -302,18 +318,16 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 
 SECTION_TITLE([RUNNING TESTS ON libzfs.h HEADER])
 
-
 if [[ "$zof" = false ]]; then
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
-		#include <sys/mnttab.h>
+		#include <stdint.h>
 		#include <sys/fs/zfs.h>
-		#include <sys/zfs_ioctl.h>
 	])
 else
 	AC_CHECK_HEADERS([libzfs.h], [], [AC_MSG_ERROR(A working libzfs header is required)], [
 		#include <sys/types.h>
-		#include <sys/mnttab.h>
+		#include <stdint.h>
 		#include <sys/fs/zfs.h>
 	])
 fi
@@ -324,7 +338,8 @@ dnl Checking for parameters of zpool_vdev_attach
 AC_MSG_NOTICE([Checking zpool_vdev_attach parameters])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_vdev_attach(NULL, NULL, NULL, NULL, 0, 0);
 		]
@@ -338,7 +353,8 @@ dnl Checking parameters of zpool_add
 AC_MSG_NOTICE([Checking zpool_add parameters])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_add(NULL, NULL, B_FALSE);
 		]
@@ -353,7 +369,8 @@ dnl Checking for existence of zfs_foreach_mountpoint function
 AC_MSG_NOTICE([Checking for existence of zfs_foreach_mountpoint])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zfs_foreach_mountpoint(NULL, NULL, 0, NULL, NULL, 0);
 		],
@@ -367,7 +384,8 @@ dnl Checking zfs_foreach_mountpoint signature (uint_t vs boolean_t)
 AC_MSG_NOTICE([Checking zfs_foreach_mountpoint signature])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			void (*fn)(libzfs_handle_t *, zfs_handle_t **, size_t,
 				zfs_iter_f, void *, uint_t) = zfs_foreach_mountpoint;
@@ -383,7 +401,8 @@ dnl Checking parameters of zvol_volsize_to_reservation function
 AC_MSG_NOTICE([Checking function signature zvol_volsize_to_reservation])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zvol_volsize_to_reservation(NULL, 0, NULL) /* ; */
 		]
@@ -398,7 +417,8 @@ dnl Checking function zpool_search_import existence
 AC_MSG_NOTICE([Checking existence of zpool_search_import in libzfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_search_import(NULL, NULL);
 		],
@@ -414,7 +434,8 @@ AC_MSG_NOTICE([Checking existence of zpool_find_import in libzfs.h header])
 AC_CHECK_DECLS([zpool_find_import],
 	[AC_SUBST(HAVE_ZPOOL_FIND_IMPORT, 1) AC_MSG_NOTICE([OK])],
 	[AC_SUBST(HAVE_ZPOOL_FIND_IMPORT, 0) AC_MSG_NOTICE([NOT FOUND])],
-	[#include <libzfs.h>]
+	[#include <stddef.h>
+#include <libzfs.h>]
 )
 
 
@@ -423,7 +444,8 @@ dnl Checking function zpool_events_next existence
 AC_MSG_NOTICE([Checking existence of zpool_events_next in libzfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_events_next(NULL, NULL, NULL, 0, 0);
 		],
@@ -438,7 +460,8 @@ dnl Checking function zpool_read_label existence
 AC_MSG_NOTICE([Checking existence of zpool_read_label with 2 params in libzfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_read_label(0, NULL) /* ; */
 		]
@@ -451,7 +474,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 AC_MSG_NOTICE([Checking existence of zpool_read_label with 3 params in libzfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_read_label(0, NULL, NULL) /* ; */
 		]
@@ -464,7 +488,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 AC_MSG_NOTICE([Checking existence of ZFS Native encryption support  in libzfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zfs_crypto_load_key(NULL, B_FALSE, NULL) /* ; */
 		]
@@ -478,7 +503,8 @@ dnl Checking zfs_crypto_load_key constness
 AC_MSG_NOTICE([Checking zfs_crypto_load_key constness])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			const char *keyloc = NULL;
 			zfs_crypto_load_key(NULL, B_FALSE, keyloc);
@@ -493,7 +519,8 @@ dnl Checking zfs_crypto_attempt_load_keys constness
 AC_MSG_NOTICE([Checking zfs_crypto_attempt_load_keys constness])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			const char *keyloc = NULL;
 			zfs_crypto_attempt_load_keys(NULL, keyloc);
@@ -508,7 +535,9 @@ dnl Checking function presence of vs_*_ashift existence
 AC_MSG_NOTICE([Checking existence of vs_*_ashift in fs/zfs.h header])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <sys/fs/zfs.h>],
+		[#include <sys/types.h>
+		#include <stdint.h>
+		#include <sys/fs/zfs.h>],
 		[
 		 	vdev_stat_t vdev_stat;
 			vdev_stat.vs_configured_ashift = 1;
@@ -524,7 +553,8 @@ dnl Checking function signature of zpool_get_status
 AC_MSG_NOTICE([Checking function signature of zpool_get_status])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_get_status(NULL, NULL, NULL) /* ; */
 		]
@@ -537,9 +567,13 @@ dnl Checking zpool_get_status constness
 
 AC_MSG_NOTICE([Checking zpool_get_status constness])
 
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
+
 AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 0)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			const char *msg = NULL;
 			zpool_get_status(NULL, &msg, NULL) /* ; */
@@ -547,7 +581,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 	)],
 	[AC_SUBST(HAVE_ZPOOL_GET_STATUS_CONST, 1) AC_MSG_NOTICE([const char ** (3 params)])],
 	[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-			[#include <libzfs.h>],
+			[#include <stddef.h>
+#include <libzfs.h>],
 			[
 				const char *msg = NULL;
 				zpool_get_status(NULL, &msg) /* ; */
@@ -558,12 +593,18 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 	)]
 )
 
+CFLAGS="$save_CFLAGS"
+
 dnl Checking zpool_import_status constness
 
 AC_MSG_NOTICE([Checking zpool_import_status constness])
 
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
+
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			const char *msg = NULL;
 			zpool_import_status(NULL, &msg, NULL) /* ; */
@@ -573,12 +614,15 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
 	[AC_SUBST(HAVE_ZPOOL_IMPORT_STATUS_CONST, 0) AC_MSG_NOTICE([char **])]
 )
 
+CFLAGS="$save_CFLAGS"
+
 dnl Checking parameters of zpool_import_status
 
 AC_MSG_NOTICE([Checking zpool_import_status parameters])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_import_status(NULL, NULL, NULL) /* ; */
 		]
@@ -592,7 +636,8 @@ dnl Checking parameters of zpool_expand_proplist
 AC_MSG_NOTICE([Checking zpool_expand_proplist parameters])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_expand_proplist(NULL, NULL, ZFS_TYPE_FILESYSTEM, B_FALSE);
 		]
@@ -606,7 +651,8 @@ dnl Checking parameters of zpool_enable_datasets
 AC_MSG_NOTICE([Checking zpool_enable_datasets parameters])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_enable_datasets(NULL, NULL, 0, 0);
 		]
@@ -620,7 +666,8 @@ dnl Checking parameters of zpool_explain_recover
 AC_MSG_NOTICE([Checking zpool_explain_recover parameters])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_explain_recover(NULL, NULL, 0, NULL, NULL, 0);
 		]
@@ -635,7 +682,8 @@ dnl Checking function signature of zpool_scan
 AC_MSG_NOTICE([Checking function signature of zpool_scan])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_scan(NULL, 0, 0) /* ; */
 		]
@@ -650,7 +698,8 @@ dnl Checking function signature of zfs_share
 AC_MSG_NOTICE([Checking function signature of zfs_share])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zfs_share(NULL) /* ; */
 		]
@@ -665,7 +714,8 @@ dnl Checking function signature of zfs_iter_filesystems
 AC_MSG_NOTICE([Checking function signature of zfs_iter_filesystems])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		   [#include <libzfs.h>],
+		   [#include <stddef.h>
+#include <libzfs.h>],
 		   [
 			(void) zfs_iter_filesystems(NULL, 0, NULL, NULL) /* ; */
 		   ]
@@ -680,7 +730,8 @@ dnl Checking function signature of zfs_iter_snapspec
 AC_MSG_NOTICE([Checking function signature of zfs_iter_snapspec])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		   [#include <libzfs.h>],
+		   [#include <stddef.h>
+#include <libzfs.h>],
 		   [
 			(void) zfs_iter_snapspec(NULL, 0, NULL, NULL, NULL) /* ; */
 		   ]
@@ -695,7 +746,8 @@ dnl Checking function signature of zfs_iter_dependents
 AC_MSG_NOTICE([Checking function signature of zfs_iter_dependents])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		   [#include <libzfs.h>],
+		   [#include <stddef.h>
+#include <libzfs.h>],
 		   [
 			(void) zfs_iter_dependents(NULL, 0, B_FALSE, NULL, NULL) /* ; */
 		   ]
@@ -710,7 +762,8 @@ dnl Checking function signature of zfs_iter_bookmarks
 AC_MSG_NOTICE([Checking function signature of zfs_iter_bookmarks])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		   [#include <libzfs.h>],
+		   [#include <stddef.h>
+#include <libzfs.h>],
 		   [
 			(void) zfs_iter_bookmarks(NULL, 0, NULL, NULL) /* ; */
 		   ]
@@ -725,7 +778,8 @@ dnl Checking function signature of zfs_iter_snapshots_sorted
 AC_MSG_NOTICE([Checking function signature of zfs_iter_snapshots_sorted])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		   [#include <libzfs.h>],
+		   [#include <stddef.h>
+#include <libzfs.h>],
 		   [
 			(void) zfs_iter_snapshots_sorted(NULL, 0, NULL, NULL, 0, 0) /* ; */
 		   ]
@@ -740,7 +794,8 @@ dnl Checking function signature of zfs_iter_children
 AC_MSG_NOTICE([Checking function signature of zfs_iter_children])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		   [#include <libzfs.h>],
+		   [#include <stddef.h>
+#include <libzfs.h>],
 		   [
 			(void) zfs_iter_children(NULL, 0, NULL, NULL) /* ; */
 		   ]
@@ -756,7 +811,8 @@ AC_MSG_NOTICE([Checking function signature of zfs_send_one])
 
 if [[ "$zof" = false ]]; then
 	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-			[#include <libzfs.h>],
+			[#include <stddef.h>
+#include <libzfs.h>],
 			[
 				zfs_send_one(NULL, NULL, 0, 0) /* ; */
 			]
@@ -766,7 +822,8 @@ if [[ "$zof" = false ]]; then
 	)
 else
 	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-			[#include <libzfs.h>],
+			[#include <stddef.h>
+#include <libzfs.h>],
 			[
 				sendflags_t flag = { 0 };
 				zfs_send_one(NULL, NULL, 0, flag) /* ; */
@@ -783,7 +840,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking EZFS_SCRUB_PAUSED presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			EZFS_SCRUB_PAUSED == EZFS_SCRUB_PAUSED /* ; */
 		]
@@ -798,7 +856,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking ZPOOL_STATUS_ERRATA presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_status_t status = ZPOOL_STATUS_ERRATA /* ; */
 		]
@@ -819,7 +878,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking ZPOOL_STATUS_REBUILDING presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_status_t status = ZPOOL_STATUS_REBUILDING /* ; */
 		]
@@ -840,7 +900,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking ZPOOL_STATUS_REBUILD_SCRUB presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_status_t status = ZPOOL_STATUS_REBUILD_SCRUB /* ; */
 		]
@@ -861,7 +922,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking ZPOOL_STATUS_NON_NATIVE_ASHIFT presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_status_t status = ZPOOL_STATUS_NON_NATIVE_ASHIFT /* ; */
 		]
@@ -880,7 +942,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking ZPOOL_STATUS_COMPATIBILITY_ERR presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_status_t status = ZPOOL_STATUS_COMPATIBILITY_ERR /* ; */
 		]
@@ -901,7 +964,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking ZPOOL_STATUS_INCOMPATIBLE_FEAT presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zpool_status_t status = ZPOOL_STATUS_INCOMPATIBLE_FEAT /* ; */
 		]
@@ -922,7 +986,8 @@ dnl Checking existence of an enum value
 AC_MSG_NOTICE([Checking LZC_SEND_FLAG_EMBED_DATA presence])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			LZC_SEND_FLAG_EMBED_DATA == LZC_SEND_FLAG_EMBED_DATA /* ; */
 		]
@@ -937,14 +1002,16 @@ dnl Checking params for zfs_receive
 AC_MSG_NOTICE([Checking params for zfs_receive])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zfs_receive(NULL, NULL, NULL, NULL, 1, NULL, NULL) /* ; */
 		]
 	)],
 	[AC_SUBST(HAVE_ZFS_RECEIVE, 7) AC_MSG_NOTICE([7 params])],
 	[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-			[#include <libzfs.h>],
+			[#include <stddef.h>
+#include <libzfs.h>],
 			[
 				zfs_receive(NULL, NULL, NULL, NULL, 1, NULL) /* ; */
 			]
@@ -960,7 +1027,8 @@ dnl Checking existence of zfs_send_resume - if found, it is safe to assume that 
 AC_MSG_NOTICE([Checking existence of zfs_send_resume and zfs_send_resume_token_to_nvlist])
 
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			zfs_send_resume(NULL, NULL, 0, NULL) /* ; */
         	]
@@ -980,7 +1048,8 @@ dnl Checking renameflags_t existence
 AC_MSG_NOTICE([Checking existence of renameflags_t in libzfs.h])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			renameflags_t flag;
 		]
@@ -997,7 +1066,8 @@ then
 	AC_MSG_NOTICE([Checking renameflags_t member names in libzfs.h])
 
 	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-			[#include <libzfs.h>],
+			[#include <stddef.h>
+#include <libzfs.h>],
 			[
 				renameflags_t flags = { 0 };
 				flags.recurse = 1;
@@ -1012,7 +1082,8 @@ then
 	AC_MSG_NOTICE([Checking function signature of zfs_rename in libzfs.h])
 
 	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-			[#include <libzfs.h>],
+			[#include <stddef.h>
+#include <libzfs.h>],
 			[
 				renameflags_t flag;
 				zfs_rename(NULL, NULL, NULL, flag);
@@ -1034,7 +1105,8 @@ dnl Checking for resumable member in recvflags_t struct
 AC_MSG_NOTICE([Checking for resumable member in recvflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			recvflags_t t;
 			t.resumable = 1 /* ; */
@@ -1050,7 +1122,8 @@ dnl Checking typedef sendflags_t in zfs header
 AC_MSG_NOTICE([Checking typedef sendflags_t in libzfs header])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			int i = sizeof(sendflags_t);
 			i = i; /* ; */
@@ -1066,7 +1139,8 @@ dnl Checking attribute name for verbose in sendflags_t struct
 AC_MSG_NOTICE([Checking attribute name for verbose in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.verbosity = 1 /* ; */
@@ -1088,7 +1162,8 @@ dnl Checking for dedup member in sendflags_t struct
 AC_MSG_NOTICE([Checking for dedup member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.dedup = 1 /* ; */
@@ -1110,7 +1185,8 @@ dnl Checking for compress member in sendflags_t struct
 AC_MSG_NOTICE([Checking for compress member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.compress = 1 /* ; */
@@ -1132,7 +1208,8 @@ dnl Checking for raw member in sendflags_t struct
 AC_MSG_NOTICE([Checking for raw member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.raw = 1 /* ; */
@@ -1154,7 +1231,8 @@ dnl Checking for backup member in sendflags_t struct
 AC_MSG_NOTICE([Checking for backup member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.backup = 1 /* ; */
@@ -1176,7 +1254,8 @@ dnl Checking for holds member in sendflags_t struct
 AC_MSG_NOTICE([Checking for holds member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.holds = 1 /* ; */
@@ -1198,7 +1277,8 @@ dnl Checking for saved member in sendflags_t struct
 AC_MSG_NOTICE([Checking for saved member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.saved = 1 /* ; */
@@ -1220,7 +1300,8 @@ dnl Checking for progressastitle member in sendflags_t struct
 AC_MSG_NOTICE([Checking for progressastitle member in sendflags_t struct])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <libzfs.h>],
+		[#include <stddef.h>
+#include <libzfs.h>],
 		[
 			sendflags_t t;
 			t.progressastitle = 1 /* ; */
@@ -1437,6 +1518,99 @@ AC_CHECK_HEADERS([sys/nvpair.h],
 	[]
 )
 
+AC_MSG_NOTICE([Checking nvpair_value_string constness])
+AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_CONST, 0)
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#include <stddef.h>
+		#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const char *value = NULL;
+			nvpair_value_string(NULL, &value);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_CONST, 1) AC_MSG_NOTICE([const char **])],
+	[AC_MSG_NOTICE([char **])]
+)
+
+AC_MSG_NOTICE([Checking nvpair_value_string_array constness])
+AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#include <stddef.h>
+		#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const char **value = NULL;
+			uint_t len = 0;
+			nvpair_value_string_array(NULL, &value, &len);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST, 1) AC_MSG_NOTICE([const char ***])],
+	[AC_MSG_NOTICE([char ***])]
+)
+
+AC_MSG_NOTICE([Checking nvlist_add_string_array constness])
+AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#include <stddef.h>
+		#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const char *values[] = { NULL };
+			nvlist_add_string_array(NULL, "name", values, 0);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 1) AC_MSG_NOTICE([const char * const *])],
+	[AC_MSG_NOTICE([char * const *])]
+)
+
+AC_MSG_NOTICE([Checking nvlist_add_nvlist_array constness])
+AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 0)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+		[#include <stddef.h>
+		#if defined(__has_include)
+		#if __has_include(<sys/nvpair.h>)
+		#include <sys/nvpair.h>
+		#elif __has_include(<libnvpair.h>)
+		#include <libnvpair.h>
+		#endif
+		#else
+		#include <sys/nvpair.h>
+		#endif],
+		[
+			const nvlist_t *lists[] = { NULL };
+			nvlist_add_nvlist_array(NULL, "name", lists, 0);
+		]
+	)],
+	[AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 1) AC_MSG_NOTICE([const nvlist_t * const *])],
+	[AC_MSG_NOTICE([nvlist_t **])]
+)
+
+CFLAGS="$save_CFLAGS"
+
 
 SECTION_TITLE([RUNNING TESTS ON sys/zfs_context_userland.h HEADER])
 
@@ -1461,6 +1635,12 @@ then
 		[AC_SUBST(HAVE_THREAD_INIT_FINI, 0) AC_MSG_NOTICE([NOT FOUND])]
 	)
 fi
+
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVPAIR_VALUE_STRING_CONST=${PYZFS_NVPAIR_VALUE_STRING_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=${PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVLIST_ADD_STRING_ARRAY_CONST=${PYZFS_NVLIST_ADD_STRING_ARRAY_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=${PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST}"
+CPPFLAGS="${CPPFLAGS} -DPYZFS_ZPOOL_GET_STATUS_CONST=${HAVE_ZPOOL_GET_STATUS_CONST}"
 
 SECTION_TITLE([GENERATING FILES])
 

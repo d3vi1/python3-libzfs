@@ -26,9 +26,14 @@
 import glob
 import os
 import platform
+import re
 import shlex
+import shutil
+import tempfile
 import subprocess
 import sys
+import sysconfig
+from pathlib import Path
 from collections import namedtuple
 from setuptools import setup
 
@@ -134,24 +139,283 @@ else:
             [versioned['nvpair'], versioned['zfs'], versioned['zfs_core'], versioned['uutil']]
         )
 
+def _dedupe_compile_args(args):
+    result = []
+    seen = set()
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg in ('-I', '-isystem', '-include'):
+            if i + 1 >= len(args):
+                if arg not in seen:
+                    result.append(arg)
+                    seen.add(arg)
+                i += 1
+                continue
+            key = f'{arg} {args[i + 1]}'
+            if key not in seen:
+                result.extend([arg, args[i + 1]])
+                seen.add(key)
+            i += 2
+            continue
+        if arg not in seen:
+            result.append(arg)
+            seen.add(arg)
+        i += 1
+    return result
+
+
+def _dedupe_list(values):
+    result = []
+    seen = set()
+    for value in values:
+        if value not in seen:
+            result.append(value)
+            seen.add(value)
+    return result
+
+
+def _split_include_dirs(args):
+    include_dirs = []
+    remaining = []
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg.startswith('-I') and arg != '-I':
+            include_dirs.append(arg[2:])
+        elif arg == '-I':
+            if i + 1 < len(args):
+                include_dirs.append(args[i + 1])
+                i += 1
+            else:
+                remaining.append(arg)
+        else:
+            remaining.append(arg)
+        i += 1
+    return include_dirs, remaining
+
+
+class BuildExt(build_ext):
+    def build_extensions(self):
+        if self.compiler:
+            if getattr(self.compiler, 'compiler_so', None):
+                self.compiler.compiler_so = _dedupe_compile_args(self.compiler.compiler_so)
+            if getattr(self.compiler, 'compiler', None):
+                self.compiler.compiler = _dedupe_compile_args(self.compiler.compiler)
+            if getattr(self.compiler, 'linker_so', None):
+                self.compiler.linker_so = _dedupe_compile_args(self.compiler.linker_so)
+            if getattr(self.compiler, 'include_dirs', None):
+                self.compiler.include_dirs = _dedupe_list(self.compiler.include_dirs)
+        for ext in self.extensions:
+            if getattr(ext, 'extra_compile_args', None):
+                ext.extra_compile_args = _dedupe_compile_args(list(ext.extra_compile_args))
+            if getattr(ext, 'include_dirs', None):
+                ext.include_dirs = _dedupe_list(list(ext.include_dirs))
+        super().build_extensions()
+
+
+def _base_compile_flags():
+    flags = []
+    for name in ('CFLAGS', 'CPPFLAGS'):
+        value = sysconfig.get_config_var(name)
+        if value:
+            flags.extend(shlex.split(value))
+    return set(flags)
+
+
+extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
+extra_compile_args = _dedupe_compile_args(extra_compile_args)
+base_compile_flags = _base_compile_flags()
+if base_compile_flags:
+    extra_compile_args = [arg for arg in extra_compile_args if arg not in base_compile_flags]
+include_dirs, extra_compile_args = _split_include_dirs(extra_compile_args)
+include_dirs = _dedupe_list(include_dirs)
+define_macros = []
+
+def _write_config_header(root):
+    config_pxi = root / 'pxd' / 'config.pxi'
+    if not config_pxi.exists():
+        return None
+
+    header_lines = [
+        '#ifndef PYZFS_CONFIG_H',
+        '#define PYZFS_CONFIG_H',
+    ]
+    for line in config_pxi.read_text().splitlines():
+        match = re.match(r'\s*DEF\s+(\w+)\s*=\s*([0-9]+)\s*$', line)
+        if match:
+            name, value = match.groups()
+            header_lines.append(f'#define {name} {value}')
+    header_lines.append('#endif')
+
+    header_path = root / 'pyzfs_config.h'
+    content = '\n'.join(header_lines) + '\n'
+    if not header_path.exists() or header_path.read_text() != content:
+        header_path.write_text(content)
+    return header_path
+
+
+def _parse_cython_version():
+    try:
+        from Cython import __version__ as cython_version
+    except Exception:
+        return (0, 0, 0)
+
+    parts = re.split(r'[.+-]', cython_version)
+    version = []
+    for part in parts:
+        if part.isdigit():
+            version.append(int(part))
+        else:
+            break
+    while len(version) < 3:
+        version.append(0)
+    return tuple(version[:3])
+
+
+def _parse_config_defs(root):
+    config_pxi = root / 'pxd' / 'config.pxi'
+    if not config_pxi.exists():
+        return None
+
+    defs = {}
+    for line in config_pxi.read_text().splitlines():
+        match = re.match(r'\s*DEF\s+(\w+)\s*=\s*([0-9]+)\s*$', line)
+        if match:
+            name, value = match.groups()
+            defs[name] = int(value)
+    return defs
+
+
+def _preprocess_cython(text, defs):
+    class MissingDict(dict):
+        def __missing__(self, key):
+            return 0
+
+    defs = MissingDict(defs or {})
+    out_lines = []
+    stack = []
+
+    def is_active():
+        return all(frame['active'] for frame in stack)
+
+    for line in text.splitlines():
+        stripped = line.lstrip()
+        if not stripped:
+            if is_active():
+                out_lines.append(line)
+            continue
+        indent = len(line) - len(stripped)
+        is_elif = stripped.startswith('ELIF ') and stripped.endswith(':')
+        is_else = stripped == 'ELSE:'
+        if is_elif or is_else:
+            while stack and indent < stack[-1]['indent']:
+                stack.pop()
+        else:
+            while stack and indent <= stack[-1]['indent']:
+                stack.pop()
+
+        if stack and stack[-1]['strip'] is None and indent > stack[-1]['indent']:
+            stack[-1]['strip'] = indent - stack[-1]['indent']
+
+        if stripped.startswith('IF ') and stripped.endswith(':'):
+            expr = stripped[3:-1].strip()
+            value = bool(eval(expr, {'__builtins__': {}}, defs))
+            stack.append({
+                'indent': indent,
+                'active': value,
+                'matched': value,
+                'strip': None,
+            })
+            continue
+        if is_elif:
+            if not stack:
+                raise ValueError('ELIF without IF')
+            frame = stack[-1]
+            if frame['matched']:
+                frame['active'] = False
+            else:
+                expr = stripped[5:-1].strip()
+                value = bool(eval(expr, {'__builtins__': {}}, defs))
+                frame['active'] = value
+                frame['matched'] = value
+            continue
+        if is_else:
+            if not stack:
+                raise ValueError('ELSE without IF')
+            frame = stack[-1]
+            frame['active'] = not frame['matched']
+            frame['matched'] = True
+            continue
+
+        if not is_active():
+            continue
+        strip_total = sum(frame['strip'] or 0 for frame in stack)
+        if strip_total:
+            out_lines.append(line[strip_total:])
+        else:
+            out_lines.append(line)
+
+    return '\n'.join(out_lines) + ('\n' if text.endswith('\n') else '')
+
+
+def _prepare_cython_sources():
+    if _parse_cython_version() < (3, 0, 0):
+        return None
+
+    root = Path(__file__).resolve().parent
+    defs = _parse_config_defs(root)
+    if defs is None:
+        return None
+
+    temp_root = Path(tempfile.mkdtemp(prefix='pyzfs-cython-'))
+    shutil.copy2(root / 'libzfs.pyx', temp_root / 'libzfs.pyx')
+    for name in ('nvpair.pxi', 'converter.pxi'):
+        if (root / name).exists():
+            shutil.copy2(root / name, temp_root / name)
+    if (root / 'pxd').exists():
+        shutil.copytree(root / 'pxd', temp_root / 'pxd', dirs_exist_ok=True)
+
+    for path in temp_root.rglob('*'):
+        if path.suffix not in {'.pyx', '.pxd', '.pxi'}:
+            continue
+        text = path.read_text()
+        new = _preprocess_cython(text, defs)
+        if new != text:
+            path.write_text(new)
+
+    return temp_root
+
+
+project_root = Path(__file__).resolve().parent
+config_header = _write_config_header(project_root)
+if config_header is not None:
+    extra_compile_args += ['-include', str(config_header)]
+    extra_compile_args = _dedupe_compile_args(extra_compile_args)
+cython_src_root = _prepare_cython_sources()
+pyx_source = str((cython_src_root or project_root) / 'libzfs.pyx')
+cython_include_dirs = [str(project_root / 'pxd')]
+if cython_src_root is not None:
+    cython_include_dirs = [str(cython_src_root), str(cython_src_root / 'pxd')]
 
 setup(
     name='libzfs',
     version='1.1',
-    setup_requires=[
-        'setuptools>=18.0',
-        'Cython',
-    ],
-    cmdclass={'build_ext': build_ext},
+    url='https://github.com/d3vi1/python3-libzfs',
+    maintainer='python3-libzfs maintainers',
+    maintainer_email='openzfs-devel@lists.openzfs.org',
+    cmdclass={'build_ext': BuildExt},
     ext_modules=[
         Extension(
             "libzfs",
-            ["libzfs.pyx"],
+            [pyx_source],
             libraries=libraries,
-            extra_compile_args=config.CFLAGS + config.CPPFLAGS,
-            cython_include_dirs=["./pxd"],
+            extra_compile_args=extra_compile_args,
+            define_macros=define_macros,
+            cython_include_dirs=cython_include_dirs,
             extra_link_args=extra_link_args,
             library_dirs=library_dirs,
+            include_dirs=include_dirs,
         )
     ]
 )

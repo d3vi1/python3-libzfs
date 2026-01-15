@@ -11,6 +11,9 @@ on:
 jobs:
   docker-build-test:
     runs-on: ubuntu-latest
+    env:
+      GIT_CONFIG_GLOBAL: /tmp/gitconfig
+      GIT_CONFIG_SYSTEM: /dev/null
     strategy:
       fail-fast: false
       matrix:
@@ -27,19 +30,60 @@ jobs:
             image: rockylinux:9
     name: ${{ matrix.target.name }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Run build/test in container
+      - name: Configure git defaults
         run: |
-          docker run --rm \
+          printf "[init]\n\tdefaultBranch = main\n" > "${GIT_CONFIG_GLOBAL}"
+      - uses: actions/checkout@v4
+      - name: Prepare cache directories
+        run: |
+          mkdir -p .cache/apt .cache/apt-lists .cache/dnf
+      - name: Cache package manager data
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/apt
+            .cache/apt-lists
+            .cache/dnf
+          key: ${{ runner.os }}-${{ matrix.target.name }}-pkg-${{ hashFiles('ci/run_in_container.sh') }}
+      - name: Start container
+        run: |
+          docker create --name "build-${{ matrix.target.name }}" \
             -v "${{ github.workspace }}:/work" \
+            -v "${{ github.workspace }}/.cache/apt:/var/cache/apt" \
+            -v "${{ github.workspace }}/.cache/apt-lists:/var/lib/apt/lists" \
+            -v "${{ github.workspace }}/.cache/dnf:/var/cache/dnf" \
             -w /work \
             "${{ matrix.target.image }}" \
-            bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }}"
-      - name: Upload package artifacts
+            bash -lc "sleep infinity"
+          docker start "build-${{ matrix.target.name }}"
+      - name: Install dependencies
+        run: docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} setup"
+      - name: Configure and build
+        run: docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} build"
+      - name: Package artifacts
+        run: docker exec "build-${{ matrix.target.name }}" bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }} package"
+      - name: Cleanup container
+        if: always()
+        run: docker rm -f "build-${{ matrix.target.name }}"
+      - name: Fix cache permissions
+        if: always()
+        run: |
+          sudo chown -R "$USER:$USER" .cache || true
+          sudo chmod -R u+rwX .cache || true
+          if [ -d dist ]; then
+            sudo chown -R "$USER:$USER" dist || true
+            sudo chmod -R u+rwX dist || true
+          fi
+          if [ -d build ]; then
+            sudo chown -R "$USER:$USER" build || true
+            sudo chmod -R u+rwX build || true
+          fi
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.target.name }}
+          name: libzfs-${{ matrix.target.name }}
           path: |
+            dist/*
             dist/**/*.deb
             dist/**/*.rpm
           if-no-files-found: ignore

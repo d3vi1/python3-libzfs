@@ -45,7 +45,9 @@ AU_ALIAS([AX_CHECK_DEFINED], [AX_CHECK_DEFINE])
 AC_DEFUN([AX_CHECK_DEFINE],[
 AS_VAR_PUSHDEF([ac_var],[ac_cv_defined_$2_$1])dnl
 AC_CACHE_CHECK([for $2 defined in $1], ac_var,
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <$1>]], [[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+#include <stdint.h>
+#include <$1>]], [[
   #ifdef $2
   int ok;
   (void)ok;
