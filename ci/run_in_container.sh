@@ -12,6 +12,16 @@ apt_has_pkg() {
   apt-cache show "$1" >/dev/null 2>&1
 }
 
+enable_dpkg_docs() {
+  local cfg
+  for cfg in /etc/dpkg/dpkg.cfg.d/excludes /etc/dpkg/dpkg.cfg.d/docker; do
+    if [[ -f "${cfg}" ]]; then
+      sed -i 's/^path-exclude/#path-exclude/' "${cfg}"
+      sed -i 's/^path-include/#path-include/' "${cfg}"
+    fi
+  done
+}
+
 ensure_python_build() {
   if python3 - <<'PY' >/dev/null 2>&1
 import importlib.util
@@ -349,9 +359,10 @@ case "${STEP}" in
     case "${DISTRO}" in
       ubuntu-focal|ubuntu-jammy|ubuntu-questing)
         export DEBIAN_FRONTEND=noninteractive
+        enable_dpkg_docs
         apt-get update
         apt_install \
-          build-essential pkg-config python3 python3-dev python3-setuptools python3-wheel python3-pip cython3 zfsutils-linux
+          build-essential pkg-config python3 python3-dev python3-setuptools python3-wheel python3-pip cython3
         if apt_has_pkg python3-build; then
           apt_install python3-build
         fi
@@ -419,10 +430,12 @@ raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
 PY
     then
       ensure_python_build
-      if python3 -m build --no-isolation --sdist --wheel; then
+      if PYTHONWARNINGS=ignore::setuptools.SetuptoolsDeprecationWarning \
+        python3 -m build --no-isolation --sdist --wheel; then
         exit 0
       fi
     fi
-    python3 setup.py sdist bdist_wheel
+    PYTHONWARNINGS=ignore::setuptools.SetuptoolsDeprecationWarning \
+      python3 setup.py sdist bdist_wheel
     ;;
 esac
