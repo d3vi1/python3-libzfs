@@ -40,7 +40,6 @@ os_name = sys.argv[3]
 with Path("manifest.json").open("r") as handle:
     manifest = json.load(handle)
 
-manifest["os_name"] = os_name
 content = Template(template_path.read_text()).render(**manifest, os_name=os_name)
 output_path.write_text(content)
 PY
