@@ -590,6 +590,7 @@ case "${STEP}" in
       tail -n 200 config.log || true
       exit 1
     fi
+    export CPPFLAGS=""
     make
 
     # Minimal import check
@@ -605,6 +606,7 @@ PY
     add_pkg_config_cppflags
     ensure_zfs_header
     report_compat_stubs
+    export CPPFLAGS=""
     if python3 - <<'PY' >/dev/null 2>&1
 import sys
 raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
