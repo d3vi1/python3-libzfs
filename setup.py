@@ -165,6 +165,35 @@ def _dedupe_compile_args(args):
     return result
 
 
+def _dedupe_list(values):
+    result = []
+    seen = set()
+    for value in values:
+        if value not in seen:
+            result.append(value)
+            seen.add(value)
+    return result
+
+
+class BuildExt(build_ext):
+    def build_extensions(self):
+        if self.compiler:
+            if getattr(self.compiler, 'compiler_so', None):
+                self.compiler.compiler_so = _dedupe_compile_args(self.compiler.compiler_so)
+            if getattr(self.compiler, 'compiler', None):
+                self.compiler.compiler = _dedupe_compile_args(self.compiler.compiler)
+            if getattr(self.compiler, 'linker_so', None):
+                self.compiler.linker_so = _dedupe_compile_args(self.compiler.linker_so)
+            if getattr(self.compiler, 'include_dirs', None):
+                self.compiler.include_dirs = _dedupe_list(self.compiler.include_dirs)
+        for ext in self.extensions:
+            if getattr(ext, 'extra_compile_args', None):
+                ext.extra_compile_args = _dedupe_compile_args(list(ext.extra_compile_args))
+            if getattr(ext, 'include_dirs', None):
+                ext.include_dirs = _dedupe_list(list(ext.include_dirs))
+        super().build_extensions()
+
+
 def _base_compile_flags():
     flags = []
     for name in ('CFLAGS', 'CPPFLAGS'):
@@ -353,7 +382,7 @@ setup(
     url='https://github.com/d3vi1/python3-libzfs',
     maintainer='python3-libzfs maintainers',
     maintainer_email='openzfs-devel@lists.openzfs.org',
-    cmdclass={'build_ext': build_ext},
+    cmdclass={'build_ext': BuildExt},
     ext_modules=[
         Extension(
             "libzfs",
