@@ -295,6 +295,64 @@ add_pkg_config_cppflags() {
   fi
 }
 
+ensure_ubuntu_runtime_libs() {
+  local missing=0
+  local lib
+  for lib in libzfs libzfs_core libnvpair libuutil; do
+    if ! find /lib /usr/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu \
+      -name "${lib}.so*" -o -name "${lib}*linux.so*" -print -quit 2>/dev/null | grep -q .; then
+      missing=1
+    fi
+  done
+
+  if [[ "${missing}" -eq 0 ]]; then
+    return
+  fi
+
+  local pkg
+  for pkg in \
+    libzfs6linux \
+    libzfs5linux \
+    libzfs4linux \
+    libzfs2linux \
+    libzfs1linux; do
+    if apt_has_pkg "${pkg}"; then
+      apt_install "${pkg}" || true
+    fi
+  done
+  for pkg in \
+    libzpool6linux \
+    libzpool5linux \
+    libzpool4linux \
+    libzpool2linux \
+    libzpool1linux; do
+    if apt_has_pkg "${pkg}"; then
+      apt_install "${pkg}" || true
+    fi
+  done
+  for pkg in \
+    libnvpair3linux \
+    libuutil3linux \
+    libnvpair1 \
+    libuutil1; do
+    if apt_has_pkg "${pkg}"; then
+      apt_install "${pkg}" || true
+    fi
+  done
+
+  local still_missing=0
+  for lib in libzfs libzfs_core libnvpair libuutil; do
+    if ! find /lib /usr/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu \
+      -name "${lib}.so*" -o -name "${lib}*linux.so*" -print -quit 2>/dev/null | grep -q .; then
+      still_missing=1
+    fi
+  done
+  if [[ "${still_missing}" -ne 0 ]]; then
+    echo "libzfs runtime libraries not found after installation." >&2
+    exit 1
+  fi
+}
+
 install_ubuntu_libzfs() {
   apt_install ca-certificates
 
@@ -318,6 +376,7 @@ install_ubuntu_libzfs() {
       if apt_has_pkg libspl-dev; then
         apt_install libspl-dev || true
       fi
+      ensure_ubuntu_runtime_libs
       return
     fi
   done
@@ -325,6 +384,7 @@ install_ubuntu_libzfs() {
     if apt_has_pkg libspl-dev; then
       apt_install libspl-dev || true
     fi
+    ensure_ubuntu_runtime_libs
     return
   fi
   echo "No libzfs development package found for ${DISTRO}." >&2
