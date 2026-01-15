@@ -10,6 +10,9 @@ on:
 jobs:
   header-compat:
     runs-on: ubuntu-latest
+    env:
+      GIT_CONFIG_GLOBAL: /tmp/gitconfig
+      GIT_CONFIG_SYSTEM: /dev/null
     strategy:
       fail-fast: false
       matrix:
@@ -26,6 +29,9 @@ jobs:
             zfs_tag: zfs-2.2.9
     name: ${{ matrix.target.name }} (${{ matrix.target.zfs_tag }})
     steps:
+      - name: Configure git defaults
+        run: |
+          printf "[init]\n\tdefaultBranch = main\n" > "${GIT_CONFIG_GLOBAL}"
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

@@ -8,11 +8,17 @@ on:
 jobs:
   prebuild:
     runs-on: buildinator-group
+    env:
+      GIT_CONFIG_GLOBAL: /tmp/gitconfig
+      GIT_CONFIG_SYSTEM: /dev/null
     outputs:
       manifest: ${{ steps.prebuild.outputs.manifest }}
       matrix: ${{ steps.prebuild.outputs.matrix }}
       uuid: ${{ steps.prebuild.outputs.uuid }}
     steps:
+      - name: Configure git defaults
+        run: |
+          printf "[init]\n\tdefaultBranch = main\n" > "${GIT_CONFIG_GLOBAL}"
       - name: Checkout
         uses: actions/checkout@v3
       
