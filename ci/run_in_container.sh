@@ -320,10 +320,14 @@ add_pkg_config_cppflags() {
     return 0
   fi
 
-  if pkg-config --exists libzfs; then
-    export CPPFLAGS="${CPPFLAGS:-} $(pkg-config --cflags libzfs)"
-  elif pkg-config --exists zfs; then
-    export CPPFLAGS="${CPPFLAGS:-} $(pkg-config --cflags zfs)"
+  local cflags=""
+  if pkg-config --exists libzfs 2>/dev/null; then
+    cflags=$(pkg-config --cflags libzfs 2>/dev/null || true)
+  elif pkg-config --exists zfs 2>/dev/null; then
+    cflags=$(pkg-config --cflags zfs 2>/dev/null || true)
+  fi
+  if [[ -n "${cflags}" ]]; then
+    export CPPFLAGS="${CPPFLAGS:-} ${cflags}"
   fi
 }
 
