@@ -94,7 +94,11 @@ PY
   rm -f "${pkgroot}/debian/control.j2"
   chmod +x "${pkgroot}/debian/rules"
 
-  (cd "${pkgroot}" && dpkg-buildpackage -us -uc -b)
+  local dpkg_flags=(-us -uc -b)
+  if [[ "${DISTRO}" == "ubuntu-focal" ]]; then
+    dpkg_flags+=(-d)
+  fi
+  (cd "${pkgroot}" && dpkg-buildpackage "${dpkg_flags[@]}")
 
   local outdir="/work/dist/packages/${DISTRO}"
   mkdir -p "${outdir}"
