@@ -6969,6 +6969,18 @@ done
 	echo '   RUNNING TESTS ON nvpair.h HEADER   ' | sed -e's/./-/g' >&6
 
 
+       for ac_header in libnvpair.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "libnvpair.h" "ac_cv_header_libnvpair_h" "
+
+"
+if test "x$ac_cv_header_libnvpair_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBNVPAIR_H 1" >>confdefs.h
+fi
+
+done
+
 
        for ac_header in sys/nvpair.h
 do :
@@ -6999,14 +7011,10 @@ CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#elif __has_include(<sys/nvpair.h>)
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
-#endif
-#else
-#include <libnvpair.h>
 #endif
 int
 main (void)
@@ -7036,14 +7044,10 @@ PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#elif __has_include(<sys/nvpair.h>)
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
-#endif
-#else
-#include <libnvpair.h>
 #endif
 int
 main (void)
@@ -7074,14 +7078,10 @@ PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#elif __has_include(<sys/nvpair.h>)
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
-#endif
-#else
-#include <libnvpair.h>
 #endif
 int
 main (void)
@@ -7111,14 +7111,10 @@ PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#elif __has_include(<sys/nvpair.h>)
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
-#endif
-#else
-#include <libnvpair.h>
 #endif
 int
 main (void)
