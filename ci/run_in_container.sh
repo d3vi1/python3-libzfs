@@ -121,6 +121,22 @@ output_path.write_text(content)
 PY
 }
 
+detect_nvlist_constness() {
+  local header
+  header=$(find /usr/src /usr/include /usr/local/include \
+    -path "*/sys/nvpair.h" -print -quit 2>/dev/null || true)
+  if [[ -z "${header}" ]]; then
+    return
+  fi
+
+  if grep -qE "nvlist_add_string_array\\([^;]*const char \\* const \\*" "${header}"; then
+    export PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=1
+  fi
+  if grep -qE "nvlist_add_nvlist_array\\([^;]*const nvlist_t \\* const \\*" "${header}"; then
+    export PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=1
+  fi
+}
+
 build_deb_package() {
   local pkgroot
   pkgroot=$(mktemp -d /tmp/pyzfs-deb-XXXXXX)
@@ -167,6 +183,7 @@ PY
   chmod +x "${pkgroot}/debian/rules"
 
   export PYZFS_CPPFLAGS="${CPPFLAGS:-}"
+  detect_nvlist_constness
   local dpkg_flags=(-us -uc -b)
   if [[ "${DISTRO}" == "ubuntu-focal" ]]; then
     dpkg_flags+=(-d)
