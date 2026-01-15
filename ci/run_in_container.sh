@@ -129,12 +129,30 @@ detect_nvlist_constness() {
     return
   fi
 
-  if grep -qE "nvlist_add_string_array\\([^;]*const char \\* const \\*" "${header}"; then
-    export PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=1
-  fi
-  if grep -qE "nvlist_add_nvlist_array\\([^;]*const nvlist_t \\* const \\*" "${header}"; then
-    export PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=1
-  fi
+  python3 - <<'PY' "${header}"
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text(errors="ignore")
+collapsed = re.sub(r"\s+", " ", text)
+
+def has_signature(name, sig):
+    return re.search(rf"{name}\s*\([^;]*{sig}", collapsed) is not None
+
+if has_signature("nvlist_add_string_array", r"const char \* const \*"):
+    print("PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=1")
+if has_signature("nvlist_add_nvlist_array", r"const nvlist_t \* const \*"):
+    print("PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=1")
+PY
+}
+
+export_nvlist_constness() {
+  while IFS= read -r line; do
+    if [[ -n "${line}" ]]; then
+      export "${line}"
+    fi
+  done < <(detect_nvlist_constness)
 }
 
 build_deb_package() {
@@ -183,7 +201,7 @@ PY
   chmod +x "${pkgroot}/debian/rules"
 
   export PYZFS_CPPFLAGS="${CPPFLAGS:-}"
-  detect_nvlist_constness
+  export_nvlist_constness
   local dpkg_flags=(-us -uc -b)
   if [[ "${DISTRO}" == "ubuntu-focal" ]]; then
     dpkg_flags+=(-d)
