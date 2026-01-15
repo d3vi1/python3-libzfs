@@ -327,6 +327,19 @@ add_pkg_config_cppflags() {
   fi
 }
 
+report_compat_stubs() {
+  if [[ ! -d /tmp/zfs-compat ]]; then
+    return
+  fi
+
+  local files
+  files=$(find /tmp/zfs-compat -type f -maxdepth 2 -print 2>/dev/null \
+    | sed 's|^/tmp/zfs-compat/||' | sort | tr '\n' ' ')
+  if [[ -n "${files// }" ]]; then
+    echo "==> zfs-compat stubs: ${files}"
+  fi
+}
+
 configure_quiet_flag() {
   if ./configure --help 2>/dev/null | grep -q -- '--quiet'; then
     echo "--quiet"
@@ -347,6 +360,7 @@ ensure_config_py() {
   echo "==> Generating config.py"
   add_pkg_config_cppflags
   ensure_zfs_header
+  report_compat_stubs
   echo "==> CPPFLAGS=${CPPFLAGS:-}"
   if ! run_configure; then
     echo "configure failed; tailing config.log" >&2
@@ -522,6 +536,7 @@ case "${STEP}" in
 
     add_pkg_config_cppflags
     ensure_zfs_header
+    report_compat_stubs
     echo "==> CPPFLAGS=${CPPFLAGS:-}"
     if ! CPPFLAGS="${CPPFLAGS:-}" run_configure; then
       echo "configure failed; tailing config.log" >&2
@@ -546,6 +561,7 @@ PY
     ensure_config_py
     add_pkg_config_cppflags
     ensure_zfs_header
+    report_compat_stubs
     if python3 - <<'PY' >/dev/null 2>&1
 import sys
 raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
