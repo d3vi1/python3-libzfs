@@ -82,4 +82,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: libzfs-${{ matrix.target.name }}
-          path: dist/*
+          path: |
+            dist/*
+            dist/**/*.deb
+            dist/**/*.rpm
+          if-no-files-found: ignore

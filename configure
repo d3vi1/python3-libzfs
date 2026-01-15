@@ -6969,6 +6969,18 @@ done
 	echo '   RUNNING TESTS ON nvpair.h HEADER   ' | sed -e's/./-/g' >&6
 
 
+       for ac_header in libnvpair.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "libnvpair.h" "ac_cv_header_libnvpair_h" "
+
+"
+if test "x$ac_cv_header_libnvpair_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBNVPAIR_H 1" >>confdefs.h
+fi
+
+done
+
 
        for ac_header in sys/nvpair.h
 do :
@@ -6999,13 +7011,9 @@ CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#endif
-#else
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
 #endif
 int
@@ -7036,13 +7044,9 @@ PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST=0
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#endif
-#else
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
 #endif
 int
@@ -7070,17 +7074,15 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvlist_add_string_array constness" >&5
 printf "%s\n" "$as_me: Checking nvlist_add_string_array constness" >&6;}
-PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=0
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test "x$PYZFS_NVLIST_ADD_STRING_ARRAY_CONST" = "x"
+then :
+  PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=0
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#endif
-#else
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
 #endif
 int
@@ -7104,20 +7106,22 @@ else $as_nop
 printf "%s\n" "$as_me: char * const *" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: forced to ${PYZFS_NVLIST_ADD_STRING_ARRAY_CONST}" >&5
+printf "%s\n" "$as_me: forced to ${PYZFS_NVLIST_ADD_STRING_ARRAY_CONST}" >&6;}
+fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Checking nvlist_add_nvlist_array constness" >&5
 printf "%s\n" "$as_me: Checking nvlist_add_nvlist_array constness" >&6;}
-PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=0
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test "x$PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST" = "x"
+then :
+  PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=0
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-#if defined(__has_include)
-#if __has_include(<sys/nvpair.h>)
-#include <sys/nvpair.h>
-#elif __has_include(<libnvpair.h>)
+#if defined(HAVE_LIBNVPAIR_H)
 #include <libnvpair.h>
-#endif
-#else
+#elif defined(HAVE_SYS_NVPAIR_H)
 #include <sys/nvpair.h>
 #endif
 int
@@ -7141,6 +7145,10 @@ else $as_nop
 printf "%s\n" "$as_me: nvlist_t **" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: forced to ${PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST}" >&5
+printf "%s\n" "$as_me: forced to ${PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST}" >&6;}
+fi
 
 CFLAGS=$save_CFLAGS
 

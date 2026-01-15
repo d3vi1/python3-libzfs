@@ -22,10 +22,10 @@ export PYBUILD_NAME=libzfs
 # 	dh_auto_configure -- #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 
 override_dh_auto_configure:
-	./configure --prefix=/usr
+	CPPFLAGS="$(CPPFLAGS) ${PYZFS_CPPFLAGS}" ./configure --prefix=/usr
 	dh_auto_configure
 
 override_dh_install:
 	mkdir -p debian/usr/share/py-libzfs
-	dh_install ./libzfs.c usr/share/py-libzfs/
+	if [ -f libzfs.c ]; then dh_install ./libzfs.c usr/share/py-libzfs/; fi
 	dh_install

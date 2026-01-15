@@ -8,6 +8,10 @@ apt_install() {
   apt-get install -y --no-install-recommends "$@"
 }
 
+apt_update() {
+  apt-get -o Acquire::Retries=3 update
+}
+
 apt_has_pkg() {
   apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"
 }
@@ -40,7 +44,7 @@ enable_ubuntu_universe() {
     fi
   done
   if [[ "${updated}" -eq 1 ]]; then
-    apt-get update
+    apt_update
   fi
 }
 
@@ -92,6 +96,164 @@ PY
   PIP_DISABLE_PIP_VERSION_CHECK=1 \
   PIP_ROOT_USER_ACTION=ignore \
     python3 -m pip install --no-cache-dir build
+}
+
+render_template() {
+  local template=$1
+  local output=$2
+  local os_name=$3
+
+  python3 - <<'PY' "${template}" "${output}" "${os_name}"
+import json
+import sys
+from pathlib import Path
+from jinja2 import Template
+
+template_path = Path(sys.argv[1])
+output_path = Path(sys.argv[2])
+os_name = sys.argv[3]
+
+with Path("manifest.json").open("r") as handle:
+    manifest = json.load(handle)
+
+content = Template(template_path.read_text()).render(**manifest, os_name=os_name)
+output_path.write_text(content)
+PY
+}
+
+detect_nvlist_constness() {
+  local header
+  header=$(find /usr/src /usr/include /usr/local/include \
+    -path "*/sys/nvpair.h" -print -quit 2>/dev/null || true)
+  if [[ -z "${header}" ]]; then
+    return
+  fi
+
+  python3 - <<'PY' "${header}"
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text(errors="ignore")
+collapsed = re.sub(r"\s+", " ", text)
+
+def has_signature(name, sig):
+    return re.search(rf"{name}\s*\([^;]*{sig}", collapsed) is not None
+
+if has_signature("nvlist_add_string_array", r"const char \* const \*"):
+    print("PYZFS_NVLIST_ADD_STRING_ARRAY_CONST=1")
+if has_signature("nvlist_add_nvlist_array", r"const nvlist_t \* const \*"):
+    print("PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST=1")
+PY
+}
+
+export_nvlist_constness() {
+  while IFS= read -r line; do
+    if [[ -n "${line}" ]]; then
+      export "${line}"
+    fi
+  done < <(detect_nvlist_constness)
+}
+
+build_deb_package() {
+  local pkgroot
+  pkgroot=$(mktemp -d /tmp/pyzfs-deb-XXXXXX)
+  tar -C /work -cf - --exclude=.git --exclude=dist --exclude=build . \
+    | tar -C "${pkgroot}" -xf -
+
+  mkdir -p "${pkgroot}/debian"
+  cp -a "/work/packaging/${DISTRO}/." "${pkgroot}/debian/"
+  python3 - <<'PY' "${DISTRO}" "${pkgroot}/debian/control"
+import json
+import sys
+from pathlib import Path
+
+os_name = sys.argv[1]
+output = Path(sys.argv[2])
+
+with Path("/work/manifest.json").open("r") as handle:
+    manifest = json.load(handle)
+
+deps = manifest.get("dependencies", {}).get("ubuntu", {}).get(
+    os_name, manifest.get("dependencies", {}).get("ubuntu_common", [])
+)
+
+lines = [
+    f"Source: {manifest['name']}",
+    "Section: utils",
+    "Priority: optional",
+    f"Maintainer: {manifest['author']}",
+    "Build-Depends: debhelper-compat (= 13), python3-all, python3-setuptools, dh-python",
+    "Standards-Version: 4.4.1",
+    "X-Python3-Version: >= 3.6",
+    f"Homepage: {manifest['git_url']}",
+    f"Vcs-Git: {manifest['git_url']}",
+    "",
+    f"Package: {manifest['name']}",
+    f"Architecture: {manifest['architecture']['ubuntu']}",
+    f"Depends: {', '.join(deps)}",
+    f"Description: {manifest['description']}",
+    "",
+]
+output.write_text("\n".join(lines))
+PY
+  rm -f "${pkgroot}/debian/control.j2"
+  chmod +x "${pkgroot}/debian/rules"
+
+  export PYZFS_CPPFLAGS="${CPPFLAGS:-}"
+  export_nvlist_constness
+  local dpkg_flags=(-us -uc -b)
+  if [[ "${DISTRO}" == "ubuntu-focal" ]]; then
+    dpkg_flags+=(-d)
+  fi
+  (cd "${pkgroot}" && dpkg-buildpackage "${dpkg_flags[@]}")
+
+  local outdir="/work/dist/packages/${DISTRO}"
+  mkdir -p "${outdir}"
+  find "$(dirname "${pkgroot}")" -maxdepth 1 -type f -name "*.deb" -exec cp -v {} "${outdir}/" \;
+}
+
+build_rpm_package() {
+  local pkgroot
+  pkgroot=$(mktemp -d /tmp/pyzfs-rpm-XXXXXX)
+  mkdir -p "${pkgroot}"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+  local name version
+  name=$(python3 - <<'PY'
+import json
+with open("manifest.json", "r") as handle:
+    print(json.load(handle)["name"])
+PY
+)
+  version=$(python3 - <<'PY'
+import json
+with open("manifest.json", "r") as handle:
+    print(json.load(handle)["version"])
+PY
+)
+
+  render_template "/work/packaging/${DISTRO}/main.spec.j2" "${pkgroot}/SPECS/${name}.spec" "${DISTRO}"
+  tar -C /work -czf "${pkgroot}/SOURCES/${name}-${version}.tar.gz" \
+    --exclude=.git --exclude=dist --exclude=build \
+    --transform "s,^,${name}-${version}/," .
+
+  rpmbuild -ba --define "_topdir ${pkgroot}" "${pkgroot}/SPECS/${name}.spec"
+
+  local outdir="/work/dist/packages/${DISTRO}"
+  mkdir -p "${outdir}"
+  find "${pkgroot}/RPMS" "${pkgroot}/SRPMS" -type f -name "*.rpm" -exec cp -v {} "${outdir}/" \;
+}
+
+build_system_packages() {
+  echo "==> Build system package artifacts"
+  case "${DISTRO}" in
+    ubuntu-*)
+      build_deb_package
+      ;;
+    rocky-*)
+      build_rpm_package
+      ;;
+  esac
 }
 
 ensure_zfs_header() {
@@ -525,7 +687,7 @@ case "${STEP}" in
       ubuntu-focal|ubuntu-jammy|ubuntu-questing)
         export DEBIAN_FRONTEND=noninteractive
         enable_dpkg_docs
-        apt-get update
+        apt_update
         pkgs=(
           build-essential
           pkg-config
@@ -535,6 +697,13 @@ case "${STEP}" in
           python3-wheel
           python3-pip
           cython3
+          debhelper
+          debhelper-compat
+          dh-python
+          dpkg-dev
+          fakeroot
+          python3-all
+          python3-all-dev
         )
         if apt_has_pkg python3-build; then
           pkgs+=(python3-build)
@@ -559,6 +728,9 @@ case "${STEP}" in
           libuuid-devel
           libtirpc-devel
           zlib-devel
+          rpm-build
+          redhat-rpm-config
+          python3-jinja2
         )
         if dnf -q list --available python3-build >/dev/null 2>&1; then
           pkgs+=(python3-build)
@@ -583,6 +755,9 @@ case "${STEP}" in
           libuuid-devel
           libtirpc-devel
           zlib-devel
+          rpm-build
+          redhat-rpm-config
+          python3-jinja2
         )
         if dnf -q list --available python3-build >/dev/null 2>&1; then
           pkgs+=(python3-build)
@@ -650,8 +825,9 @@ PY
     then
       ensure_python_build
       python3 -m build --no-isolation --sdist --wheel
-      exit 0
+    else
+      python3 setup.py sdist bdist_wheel
     fi
-    python3 setup.py sdist bdist_wheel
+    build_system_packages
     ;;
 esac

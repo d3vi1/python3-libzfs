@@ -1511,7 +1511,7 @@ AC_CHECK_HEADERS([sys/zfs_ioctl.h],
 
 SECTION_TITLE([RUNNING TESTS ON nvpair.h HEADER])
 
-
+AC_CHECK_HEADERS([libnvpair.h])
 AC_CHECK_HEADERS([sys/nvpair.h],
 	[AC_SUBST(HAVE_NVPAIR_IN_SYS, 1) AC_MSG_NOTICE([Nvpair.h header under sys])],
 	[AC_SUBST(HAVE_NVPAIR_IN_SYS, 0) AC_MSG_NOTICE([Nvpair.h header not under sys subdirectory])],
@@ -1524,13 +1524,9 @@ save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -Werror=incompatible-pointer-types"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
-		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
+		#if defined(HAVE_LIBNVPAIR_H)
 		#include <libnvpair.h>
-		#endif
-		#else
+		#elif defined(HAVE_SYS_NVPAIR_H)
 		#include <sys/nvpair.h>
 		#endif],
 		[
@@ -1546,13 +1542,9 @@ AC_MSG_NOTICE([Checking nvpair_value_string_array constness])
 AC_SUBST(PYZFS_NVPAIR_VALUE_STRING_ARRAY_CONST, 0)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 		[#include <stddef.h>
-		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
+		#if defined(HAVE_LIBNVPAIR_H)
 		#include <libnvpair.h>
-		#endif
-		#else
+		#elif defined(HAVE_SYS_NVPAIR_H)
 		#include <sys/nvpair.h>
 		#endif],
 		[
@@ -1566,48 +1558,52 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 )
 
 AC_MSG_NOTICE([Checking nvlist_add_string_array constness])
-AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 0)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <stddef.h>
-		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
-		#include <libnvpair.h>
-		#endif
-		#else
-		#include <sys/nvpair.h>
-		#endif],
-		[
-			const char *values[] = { NULL };
-			nvlist_add_string_array(NULL, "name", values, 0);
-		]
-	)],
-	[AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 1) AC_MSG_NOTICE([const char * const *])],
-	[AC_MSG_NOTICE([char * const *])]
-)
+if test "x$PYZFS_NVLIST_ADD_STRING_ARRAY_CONST" = "x"
+then
+	AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 0)
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+			[#include <stddef.h>
+			#if defined(HAVE_LIBNVPAIR_H)
+			#include <libnvpair.h>
+			#elif defined(HAVE_SYS_NVPAIR_H)
+			#include <sys/nvpair.h>
+			#endif],
+			[
+				const char *values[] = { NULL };
+				nvlist_add_string_array(NULL, "name", values, 0);
+			]
+		)],
+		[AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, 1) AC_MSG_NOTICE([const char * const *])],
+		[AC_MSG_NOTICE([char * const *])]
+	)
+else
+	AC_SUBST(PYZFS_NVLIST_ADD_STRING_ARRAY_CONST, $PYZFS_NVLIST_ADD_STRING_ARRAY_CONST)
+	AC_MSG_NOTICE([forced to ${PYZFS_NVLIST_ADD_STRING_ARRAY_CONST}])
+fi
 
 AC_MSG_NOTICE([Checking nvlist_add_nvlist_array constness])
-AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 0)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-		[#include <stddef.h>
-		#if defined(__has_include)
-		#if __has_include(<sys/nvpair.h>)
-		#include <sys/nvpair.h>
-		#elif __has_include(<libnvpair.h>)
-		#include <libnvpair.h>
-		#endif
-		#else
-		#include <sys/nvpair.h>
-		#endif],
-		[
-			const nvlist_t *lists[] = { NULL };
-			nvlist_add_nvlist_array(NULL, "name", lists, 0);
-		]
-	)],
-	[AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 1) AC_MSG_NOTICE([const nvlist_t * const *])],
-	[AC_MSG_NOTICE([nvlist_t **])]
-)
+if test "x$PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST" = "x"
+then
+	AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 0)
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+			[#include <stddef.h>
+			#if defined(HAVE_LIBNVPAIR_H)
+			#include <libnvpair.h>
+			#elif defined(HAVE_SYS_NVPAIR_H)
+			#include <sys/nvpair.h>
+			#endif],
+			[
+				const nvlist_t *lists[] = { NULL };
+				nvlist_add_nvlist_array(NULL, "name", lists, 0);
+			]
+		)],
+		[AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, 1) AC_MSG_NOTICE([const nvlist_t * const *])],
+		[AC_MSG_NOTICE([nvlist_t **])]
+	)
+else
+	AC_SUBST(PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST, $PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST)
+	AC_MSG_NOTICE([forced to ${PYZFS_NVLIST_ADD_NVLIST_ARRAY_CONST}])
+fi
 
 CFLAGS="$save_CFLAGS"
 
