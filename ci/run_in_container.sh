@@ -797,6 +797,9 @@ case "${STEP}" in
 
     # Minimal import check
     build_dir=$(ls -d build/lib.* 2>/dev/null | head -n 1 || true)
+    if [[ -z "${build_dir}" && -d build/lib ]]; then
+      build_dir=build/lib
+    fi
     PYTHONPATH="${build_dir}${PYTHONPATH:+:$PYTHONPATH}" python3 - <<'PY'
 import libzfs
 print("libzfs import OK", libzfs.__name__)
@@ -818,16 +821,8 @@ PY
       tail -n 200 config.log || true
       exit 1
     fi
-    if python3 - <<'PY' >/dev/null 2>&1
-import sys
-raise SystemExit(0 if sys.version_info >= (3, 7) else 1)
-PY
-    then
-      ensure_python_build
-      python3 -m build --no-isolation --sdist --wheel
-    else
-      python3 setup.py sdist bdist_wheel
-    fi
+    ensure_python_build
+    python3 -m build --no-isolation --sdist --wheel
     build_system_packages
     ;;
 esac

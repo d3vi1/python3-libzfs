@@ -29,7 +29,9 @@ make
 
 %install
 echo "Starting install process..."
-python3 setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+PIP_DISABLE_PIP_VERSION_CHECK=1 \
+PIP_ROOT_USER_ACTION=ignore \
+  python3 -m pip install . --no-deps --no-build-isolation --root=$RPM_BUILD_ROOT --prefix=/usr --record=INSTALLED_FILES
 
 %clean
 rm -rf $RPM_BUILD_ROOT
