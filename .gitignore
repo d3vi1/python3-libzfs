@@ -14,5 +14,6 @@ config.log
 config.status
 config.h
 config.py
+pyzfs_config.h
 *.c
 *.html

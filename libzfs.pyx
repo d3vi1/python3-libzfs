@@ -60,53 +60,42 @@ cdef extern from *:
     #endif
     """
 
-IF HAVE_ZPOOL_GET_STATUS == 3:
-    cdef extern from *:
-        """
-        #if defined(__has_include)
-        #if __has_include(<libzfs.h>)
-        #include <libzfs.h>
-        #endif
-        #endif
+cdef extern from *:
+    """
+    #if defined(__has_include)
+    #if __has_include(<libzfs.h>)
+    #include <libzfs.h>
+    #endif
+    #endif
 
-        #ifndef PYZFS_ZPOOL_GET_STATUS_CONST
-        #define PYZFS_ZPOOL_GET_STATUS_CONST 1
-        #endif
+    #ifndef HAVE_ZPOOL_GET_STATUS
+    #define HAVE_ZPOOL_GET_STATUS 0
+    #endif
+    #ifndef HAVE_ZPOOL_GET_STATUS_CONST
+    #define HAVE_ZPOOL_GET_STATUS_CONST 1
+    #endif
 
-        static inline zpool_status_t pyzfs_zpool_get_status(
-            zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
-        #if PYZFS_ZPOOL_GET_STATUS_CONST
-          return zpool_get_status(zhp, msg, err);
-        #else
-          return zpool_get_status(zhp, (char **)msg, err);
-        #endif
-        }
-        """
-        zpool_status_t pyzfs_zpool_get_status(
-            libzfs.zpool_handle_t *, const char **, zfs.zpool_errata_t *)
-ELSE:
-    cdef extern from *:
-        """
-        #if defined(__has_include)
-        #if __has_include(<libzfs.h>)
-        #include <libzfs.h>
-        #endif
-        #endif
-
-        #ifndef PYZFS_ZPOOL_GET_STATUS_CONST
-        #define PYZFS_ZPOOL_GET_STATUS_CONST 1
-        #endif
-
-        static inline zpool_status_t pyzfs_zpool_get_status(
-            zpool_handle_t *zhp, const char **msg) {
-        #if PYZFS_ZPOOL_GET_STATUS_CONST
-          return zpool_get_status(zhp, msg);
-        #else
-          return zpool_get_status(zhp, (char **)msg);
-        #endif
-        }
-        """
-        zpool_status_t pyzfs_zpool_get_status(libzfs.zpool_handle_t *, const char **)
+    static inline zpool_status_t pyzfs_zpool_get_status(
+        zpool_handle_t *zhp, const char **msg, zpool_errata_t *err) {
+    #if HAVE_ZPOOL_GET_STATUS == 3
+    #if HAVE_ZPOOL_GET_STATUS_CONST
+      return zpool_get_status(zhp, msg, err);
+    #else
+      return zpool_get_status(zhp, (char **)msg, err);
+    #endif
+    #else
+    #if HAVE_ZPOOL_GET_STATUS_CONST
+      (void)err;
+      return zpool_get_status(zhp, msg);
+    #else
+      (void)err;
+      return zpool_get_status(zhp, (char **)msg);
+    #endif
+    #endif
+    }
+    """
+    zpool_status_t pyzfs_zpool_get_status(
+        libzfs.zpool_handle_t *, const char **, zfs.zpool_errata_t *)
 
 
 class DatasetType(enum.IntEnum):
