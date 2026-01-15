@@ -340,7 +340,7 @@ report_compat_stubs() {
   if ! command -v find >/dev/null 2>&1; then
     return
   fi
-  files=$(find /tmp/zfs-compat -type f -maxdepth 2 -print 2>/dev/null \
+  files=$(find /tmp/zfs-compat -maxdepth 2 -type f -print 2>/dev/null \
     | sed 's|^/tmp/zfs-compat/||' | sort | tr '\n' ' ' || true)
   if [[ -n "${files// }" ]]; then
     echo "==> zfs-compat stubs: ${files}"
