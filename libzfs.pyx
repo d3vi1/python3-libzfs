@@ -207,6 +207,8 @@ class LpcError(enum.IntEnum):
         NOMEM = libzfs.LPC_NOMEM
         EACCESS = libzfs.LPC_EACCESS
         UNKNOWN = libzfs.LPC_UNKNOWN
+    ELSE:
+        UNKNOWN = 0
 
 
 class PropertySource(enum.IntEnum):
