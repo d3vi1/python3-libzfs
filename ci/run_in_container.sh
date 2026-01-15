@@ -22,6 +22,80 @@ PY
   python3 -m pip install "${pip_args[@]}" "${cython_spec}"
 }
 
+render_template() {
+  local template=$1
+  local output=$2
+  local os_name=$3
+
+  python3 - <<'PY' "${template}" "${output}" "${os_name}"
+import json
+import sys
+from pathlib import Path
+from jinja2 import Template
+
+template_path = Path(sys.argv[1])
+output_path = Path(sys.argv[2])
+os_name = sys.argv[3]
+
+with Path("manifest.json").open("r") as handle:
+    manifest = json.load(handle)
+
+manifest["os_name"] = os_name
+content = Template(template_path.read_text()).render(**manifest, os_name=os_name)
+output_path.write_text(content)
+PY
+}
+
+build_deb_package() {
+  local pkgroot
+  pkgroot=$(mktemp -d /tmp/pyzfs-deb-XXXXXX)
+  tar -C /work -cf - --exclude=.git --exclude=dist --exclude=build . \
+    | tar -C "${pkgroot}" -xf -
+
+  mkdir -p "${pkgroot}/debian"
+  cp -a "/work/packaging/${DISTRO}/." "${pkgroot}/debian/"
+  render_template "/work/packaging/${DISTRO}/control.j2" "${pkgroot}/debian/control" "${DISTRO}"
+  rm -f "${pkgroot}/debian/control.j2"
+  chmod +x "${pkgroot}/debian/rules"
+
+  (cd "${pkgroot}" && dpkg-buildpackage -us -uc -b)
+
+  local outdir="/work/dist/packages/${DISTRO}"
+  mkdir -p "${outdir}"
+  find "$(dirname "${pkgroot}")" -maxdepth 1 -type f -name "*.deb" -exec cp -v {} "${outdir}/" \;
+}
+
+build_rpm_package() {
+  local pkgroot
+  pkgroot=$(mktemp -d /tmp/pyzfs-rpm-XXXXXX)
+  mkdir -p "${pkgroot}"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+  local name version
+  name=$(python3 - <<'PY'
+import json
+with open("manifest.json", "r") as handle:
+    print(json.load(handle)["name"])
+PY
+)
+  version=$(python3 - <<'PY'
+import json
+with open("manifest.json", "r") as handle:
+    print(json.load(handle)["version"])
+PY
+)
+
+  render_template "/work/packaging/${DISTRO}/main.spec.j2" "${pkgroot}/SPECS/${name}.spec" "${DISTRO}"
+  tar -C /work -czf "${pkgroot}/SOURCES/${name}-${version}.tar.gz" \
+    --exclude=.git --exclude=dist --exclude=build \
+    --transform "s,^,${name}-${version}/," .
+
+  rpmbuild -ba --define "_topdir ${pkgroot}" "${pkgroot}/SPECS/${name}.spec"
+
+  local outdir="/work/dist/packages/${DISTRO}"
+  mkdir -p "${outdir}"
+  find "${pkgroot}/RPMS" "${pkgroot}/SRPMS" -type f -name "*.rpm" -exec cp -v {} "${outdir}/" \;
+}
+
 download_openzfs_headers() {
   local version=$1
   local tag="zfs-${version}"
@@ -223,35 +297,49 @@ case "${DISTRO}" in
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends \
-      build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux
+      build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux \
+      debhelper dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
+    if apt-cache policy python3-cython 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"; then
+      apt-get install -y --no-install-recommends python3-cython
+    fi
     install_ubuntu_libzfs
     ;;
   ubuntu-jammy)
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends \
-      build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux
+      build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux \
+      debhelper dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
+    if apt-cache policy python3-cython 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"; then
+      apt-get install -y --no-install-recommends python3-cython
+    fi
     install_ubuntu_libzfs
     ;;
   ubuntu-questing)
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends \
-      build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux
+      build-essential pkg-config python3 python3-dev python3-pip python3-setuptools zfsutils-linux \
+      debhelper dh-python dpkg-dev fakeroot python3-all python3-all-dev python3-jinja2
+    if apt-cache policy python3-cython 2>/dev/null | awk '/Candidate:/ {print $2}' | grep -vq "(none)"; then
+      apt-get install -y --no-install-recommends python3-cython
+    fi
     install_ubuntu_libzfs
     ;;
   rocky-el8)
     dnf -y install dnf-plugins-core
     dnf config-manager --set-enabled powertools || true
     dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config \
-      libblkid-devel libuuid-devel libtirpc-devel zlib-devel
+      libblkid-devel libuuid-devel libtirpc-devel zlib-devel \
+      rpm-build redhat-rpm-config python3-jinja2
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
     ;;
   rocky-el9)
     dnf -y install dnf-plugins-core
     dnf config-manager --set-enabled crb || true
     dnf -y install gcc make python3 python3-devel python3-pip pkgconf-pkg-config \
-      libblkid-devel libuuid-devel libtirpc-devel zlib-devel
+      libblkid-devel libuuid-devel libtirpc-devel zlib-devel \
+      rpm-build redhat-rpm-config python3-jinja2
     install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
     ;;
   *)
@@ -285,3 +373,16 @@ PYTHONPATH="${build_dir}${PYTHONPATH:+:$PYTHONPATH}" python3 - <<'PY'
 import libzfs
 print("libzfs import OK", libzfs.__name__)
 PY
+
+echo "==> Build system package artifacts"
+case "${DISTRO}" in
+  ubuntu-*)
+    build_deb_package
+    ;;
+  rocky-*)
+    build_rpm_package
+    ;;
+  *)
+    echo "Skipping package build for ${DISTRO}" >&2
+    ;;
+esac

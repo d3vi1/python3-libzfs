@@ -35,3 +35,11 @@ jobs:
             -w /work \
             "${{ matrix.target.image }}" \
             bash -lc "./ci/run_in_container.sh ${{ matrix.target.name }}"
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.target.name }}
+          path: |
+            dist/**/*.deb
+            dist/**/*.rpm
+          if-no-files-found: ignore
