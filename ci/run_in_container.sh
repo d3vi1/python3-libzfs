@@ -100,7 +100,7 @@ ensure_zfs_header() {
     header=$(rpm -ql libzfs5-devel 2>/dev/null | grep -m1 '/sys/fs/zfs.h$' || true)
   fi
   if [[ -z "${header}" ]]; then
-    for root in /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /tmp/openzfs-src/include /usr/src; do
+    for root in /usr/local/include /usr/include /usr/include/zfs /usr/include/libzfs /usr/src; do
       header=$(find "${root}" -path "*/sys/fs/zfs.h" -print -quit 2>/dev/null || true)
       if [[ -n "${header}" ]]; then
         break
@@ -327,6 +327,18 @@ add_pkg_config_cppflags() {
   fi
 }
 
+configure_quiet_flag() {
+  if ./configure --help 2>/dev/null | grep -q -- '--quiet'; then
+    echo "--quiet"
+  fi
+}
+
+run_configure() {
+  local quiet_flag
+  quiet_flag=$(configure_quiet_flag)
+  ./configure ${quiet_flag} >/dev/null
+}
+
 ensure_config_py() {
   if [[ -f config.py ]]; then
     return
@@ -336,7 +348,7 @@ ensure_config_py() {
   add_pkg_config_cppflags
   ensure_zfs_header
   echo "==> CPPFLAGS=${CPPFLAGS:-}"
-  if ! ./configure; then
+  if ! run_configure; then
     echo "configure failed; tailing config.log" >&2
     if [[ -f config.log ]]; then
       grep -n "error:" config.log || true
@@ -511,7 +523,7 @@ case "${STEP}" in
     add_pkg_config_cppflags
     ensure_zfs_header
     echo "==> CPPFLAGS=${CPPFLAGS:-}"
-    if ! CPPFLAGS="${CPPFLAGS:-}" ./configure; then
+    if ! CPPFLAGS="${CPPFLAGS:-}" run_configure; then
       echo "configure failed; tailing config.log" >&2
       if [[ -f config.log ]]; then
         grep -n "error:" config.log || true
