@@ -473,8 +473,7 @@ install_ubuntu_libzfs() {
 
 install_rocky_libzfs() {
   local release_rpm=$1
-  dnf -y install ca-certificates tar
-  dnf -y install "${release_rpm}"
+  dnf -y install ca-certificates tar "${release_rpm}"
 
   dnf config-manager --set-enabled zfs || true
 
@@ -501,31 +500,68 @@ case "${STEP}" in
         export DEBIAN_FRONTEND=noninteractive
         enable_dpkg_docs
         apt-get update
-        apt_install \
-          build-essential pkg-config python3 python3-dev python3-setuptools python3-wheel python3-pip cython3
+        pkgs=(
+          build-essential
+          pkg-config
+          python3
+          python3-dev
+          python3-setuptools
+          python3-wheel
+          python3-pip
+          cython3
+        )
         if apt_has_pkg python3-build; then
-          apt_install python3-build
+          pkgs+=(python3-build)
         fi
+        apt_install "${pkgs[@]}"
         install_ubuntu_libzfs
         ;;
       rocky-el8)
         dnf -y install dnf-plugins-core epel-release
         dnf config-manager --set-enabled powertools || true
-        dnf -y install gcc make python3 python3-devel python3-setuptools python3-wheel python3-pip pkgconf-pkg-config python3-Cython \
-          libblkid-devel libuuid-devel libtirpc-devel zlib-devel
+        pkgs=(
+          gcc
+          make
+          python3
+          python3-devel
+          python3-setuptools
+          python3-wheel
+          python3-pip
+          pkgconf-pkg-config
+          python3-Cython
+          libblkid-devel
+          libuuid-devel
+          libtirpc-devel
+          zlib-devel
+        )
         if dnf -q list --available python3-build >/dev/null 2>&1; then
-          dnf -y install python3-build
+          pkgs+=(python3-build)
         fi
+        dnf -y install "${pkgs[@]}"
         install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el8.noarch.rpm
         ;;
       rocky-el9)
         dnf -y install dnf-plugins-core epel-release
         dnf config-manager --set-enabled crb || true
-        dnf -y install gcc make python3 python3-devel python3-setuptools python3-wheel python3-pip pkgconf-pkg-config python3-Cython \
-          libblkid-devel libuuid-devel libtirpc-devel zlib-devel
+        pkgs=(
+          gcc
+          make
+          python3
+          python3-devel
+          python3-setuptools
+          python3-wheel
+          python3-pip
+          pkgconf-pkg-config
+          python3-Cython
+          libblkid-devel
+          libuuid-devel
+          libtirpc-devel
+          zlib-devel
+        )
         if dnf -q list --available python3-build >/dev/null 2>&1; then
-          dnf -y install python3-build
+          pkgs+=(python3-build)
         fi
+        dnf -y install "${pkgs[@]}"
         install_rocky_libzfs https://zfsonlinux.org/epel/zfs-release-2-2.el9.noarch.rpm
         ;;
       *)

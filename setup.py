@@ -139,9 +139,47 @@ else:
             [versioned['nvpair'], versioned['zfs'], versioned['zfs_core'], versioned['uutil']]
         )
 
-extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
-define_macros = []
+def _dedupe_compile_args(args):
+    result = []
+    seen = set()
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg in ('-I', '-isystem', '-include'):
+            if i + 1 >= len(args):
+                if arg not in seen:
+                    result.append(arg)
+                    seen.add(arg)
+                i += 1
+                continue
+            key = f'{arg} {args[i + 1]}'
+            if key not in seen:
+                result.extend([arg, args[i + 1]])
+                seen.add(key)
+            i += 2
+            continue
+        if arg not in seen:
+            result.append(arg)
+            seen.add(arg)
+        i += 1
+    return result
 
+
+def _base_compile_flags():
+    flags = []
+    for name in ('CFLAGS', 'CPPFLAGS'):
+        value = sysconfig.get_config_var(name)
+        if value:
+            flags.extend(shlex.split(value))
+    return set(flags)
+
+
+extra_compile_args = list(getattr(config, 'CFLAGS', [])) + list(getattr(config, 'CPPFLAGS', []))
+extra_compile_args = _dedupe_compile_args(extra_compile_args)
+base_compile_flags = _base_compile_flags()
+if base_compile_flags:
+    extra_compile_args = [arg for arg in extra_compile_args if arg not in base_compile_flags]
+define_macros = []
 
 def _write_config_header(root):
     config_pxi = root / 'pxd' / 'config.pxi'
@@ -302,6 +340,7 @@ project_root = Path(__file__).resolve().parent
 config_header = _write_config_header(project_root)
 if config_header is not None:
     extra_compile_args += ['-include', str(config_header)]
+    extra_compile_args = _dedupe_compile_args(extra_compile_args)
 cython_src_root = _prepare_cython_sources()
 pyx_source = str((cython_src_root or project_root) / 'libzfs.pyx')
 cython_include_dirs = [str(project_root / 'pxd')]
