@@ -17,3 +17,6 @@ config.py
 pyzfs_config.h
 *.c
 *.html
+
+# Local Codex agent instructions (keep untracked)
+/AGENTS.md
