@@ -13,14 +13,11 @@ PXDS = \
 	pxd/types.pxd \
 	pxd/zfs.pxd
 
-build: libzfs.c
-
-libzfs.c: libzfs.pyx ${PXIS} ${PXDS}
-	rm -f libzfs.c
-	${PYTHON} setup.py build
+build: libzfs.pyx ${PXIS} ${PXDS}
+	${PYTHON} -m pip install . --no-deps --no-build-isolation --target build/lib
 
 clean:
-	rm -rf build libzfs.c
+	rm -rf build dist libzfs.c *.egg-info
 
 install:
-	${PYTHON} setup.py install --prefix ${PREFIX}
+	${PYTHON} -m pip install . --no-deps --no-build-isolation --prefix ${PREFIX}
